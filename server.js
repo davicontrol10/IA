@@ -39,6 +39,15 @@ async function initDb() {
       chat       JSONB DEFAULT '[]'::jsonb,
       updated_at TIMESTAMPTZ DEFAULT now()
     );
+    CREATE TABLE IF NOT EXISTS conversations (
+      id         SERIAL PRIMARY KEY,
+      user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      title      TEXT DEFAULT 'Nova conversa',
+      messages   JSONB DEFAULT '[]'::jsonb,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+    CREATE INDEX IF NOT EXISTS idx_conv_user ON conversations(user_id, updated_at DESC);
   `);
   console.log('Banco pronto.');
 }
@@ -126,22 +135,77 @@ app.put('/api/state', auth, async (req, res) => {
   } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao salvar.' }); }
 });
 
+/* ---------- conversas (lista lateral) ---------- */
+app.get('/api/conversations', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id,title,updated_at FROM conversations WHERE user_id=$1 ORDER BY updated_at DESC LIMIT 200',
+      [req.userId]);
+    res.json(rows);
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao listar conversas.' }); }
+});
+
+app.post('/api/conversations', auth, async (req, res) => {
+  try {
+    const title = clean(req.body.title).slice(0, 80) || 'Nova conversa';
+    const { rows } = await pool.query(
+      'INSERT INTO conversations(user_id,title,messages) VALUES($1,$2,$3::jsonb) RETURNING id,title,updated_at',
+      [req.userId, title, '[]']);
+    res.json(rows[0]);
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao criar conversa.' }); }
+});
+
+app.get('/api/conversations/:id', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id,title,messages FROM conversations WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]);
+    if (!rows.length) return res.status(404).json({ error: 'Conversa não encontrada.' });
+    res.json(rows[0]);
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao abrir conversa.' }); }
+});
+
+app.put('/api/conversations/:id', auth, async (req, res) => {
+  try {
+    const messages = Array.isArray(req.body.messages) ? req.body.messages.slice(-200) : [];
+    const title = clean(req.body.title).slice(0, 80) || 'Nova conversa';
+    const r = await pool.query(
+      `UPDATE conversations SET messages=$1::jsonb, title=$2, updated_at=now()
+       WHERE id=$3 AND user_id=$4 RETURNING id`,
+      [JSON.stringify(messages), title, req.params.id, req.userId]);
+    if (!r.rowCount) return res.status(404).json({ error: 'Conversa não encontrada.' });
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao salvar conversa.' }); }
+});
+
+app.delete('/api/conversations/:id', auth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM conversations WHERE id=$1 AND user_id=$2', [req.params.id, req.userId]);
+    res.json({ ok: true });
+  } catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao apagar conversa.' }); }
+});
+
 /* ---------- ponte com o Gemini (a chave nunca sai daqui) ---------- */
 const MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
 const BRAINS = {
   auto:    ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'],
   esperto: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.0-flash'],
-  rapido:  ['gemini-2.5-flash-lite', 'gemini-2.0-flash-lite', 'gemini-2.0-flash']
+  rapido:  ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.5-flash']
 };
 const CAP = { 'gemini-2.0-flash': 8192, 'gemini-2.0-flash-lite': 8192, 'gemini-flash-latest': 8192 };
 
 app.post('/api/chat', auth, async (req, res) => {
   if (!GEMINI_API_KEY) return res.status(503).json({ error: 'O servidor está sem a chave do Gemini configurada.' });
   const messages = Array.isArray(req.body.messages) ? req.body.messages : [];
-  const system = clean(req.body.system) || 'Você é o ATLAS, assistente pessoal. Responda em português do Brasil.';
+  const search = req.body.search !== false;   // busca na internet ligada por padrão
+  const now = new Date();
+  const agora = now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'full', timeStyle: 'short' });
+  const sysBase = clean(req.body.system) || 'Você é o ATLAS, assistente pessoal. Responda em português do Brasil.';
+  const system = sysBase +
+    '\n\nAgora, no fuso de Brasília, é: ' + agora + '. Use esta data e hora ao responder sobre "hoje", "agora" ou o momento atual.' +
+    (search ? '\nVocê tem busca na internet ativada. Para qualquer coisa atual — tempo/clima, notícias, preços, resultados, cotações — consulte a web e responda com o dado real e atualizado, citando de quando é. Não invente números.' : '');
+
   const want = Math.min(Math.max(+req.body.maxTokens || 4096, 256), 65536);
   const wish = BRAINS[req.body.brain] || BRAINS.auto;
-
   const order = [];
   wish.concat(MODELS).forEach(m => { if (order.indexOf(m) < 0) order.push(m); });
   const contents = messages.map(m => ({
@@ -149,22 +213,33 @@ app.post('/api/chat', auth, async (req, res) => {
     parts: [{ text: String(m.text || '') }]
   }));
 
-  let last = 'Não consegui falar com o Gemini.';
-  for (const model of order) {
+  async function callGemini(model, useTools) {
     const body = {
       system_instruction: { parts: [{ text: system }] },
       contents,
       generationConfig: { temperature: 0.9, maxOutputTokens: Math.min(want, CAP[model] || 65536) }
     };
-    let r, data;
-    try {
-      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
-        body: JSON.stringify(body)
-      });
-      data = await r.json();
-    } catch { last = 'Sem conexão do servidor com o Gemini.'; continue; }
+    if (useTools) body.tools = [{ google_search: {} }];
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+      body: JSON.stringify(body)
+    });
+    return { r, data: await r.json() };
+  }
+
+  let last = 'Não consegui falar com o Gemini.';
+  for (const model of order) {
+    let out;
+    try { out = await callGemini(model, search); }
+    catch { last = 'Sem conexão do servidor com o Gemini.'; continue; }
+    let { r, data } = out;
+
+    // se o modelo não aceitar a ferramenta de busca, tenta de novo sem ela
+    const emsg0 = data?.error?.message || '';
+    if (search && r.status === 400 && /tool|google_search|function/i.test(emsg0)) {
+      try { ({ r, data } = await callGemini(model, false)); } catch { last = 'Sem conexão.'; continue; }
+    }
 
     const emsg = data?.error?.message || '';
     if (r.status === 404 || (r.status === 400 && /model/i.test(emsg))) { last = 'Modelo indisponível na chave.'; continue; }
@@ -177,7 +252,13 @@ app.post('/api/chat', auth, async (req, res) => {
       if (cand.finishReason === 'SAFETY') return res.status(400).json({ error: 'O Gemini bloqueou essa resposta pelos filtros dele.' });
       last = 'Resposta vazia.'; continue;
     }
-    return res.json({ text, cut: cand.finishReason === 'MAX_TOKENS', model });
+    // fontes da busca, se houver
+    let sources = [];
+    try {
+      const chunks = cand.groundingMetadata?.groundingChunks || [];
+      sources = chunks.map(c => c.web?.title).filter(Boolean).slice(0, 4);
+    } catch {}
+    return res.json({ text, cut: cand.finishReason === 'MAX_TOKENS', model, sources });
   }
   res.status(502).json({ error: last });
 });

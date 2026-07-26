@@ -93,6 +93,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .bubble code{font-family:var(--mono);font-size:.86em;background:rgba(0,0,0,.35);padding:1px 5px;border-radius:5px}
 .bubble.err{border-left-color:var(--danger);color:#FFD9D6}
 .tools{display:flex;gap:14px;padding-left:2px}
+.sources{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:var(--dim);
+  padding-left:2px;line-height:1.5;opacity:.85}
 .tool{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);transition:color .15s}
 .tool:hover{color:var(--brass)}
 .thinking{display:flex;gap:5px;align-items:center;padding:14px}
@@ -199,6 +201,35 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 .tile:active{background:rgba(237,234,246,.09)}
 .tile span{font-size:23px;line-height:1}
 .hidden{display:none!important}
+
+/* ============ GAVETA DE CONVERSAS ============ */
+.drawer{position:fixed;top:0;left:0;bottom:0;z-index:22;width:min(84vw,320px);
+  background:var(--ink-2);border-right:1px solid var(--line-2);
+  display:flex;flex-direction:column;
+  transform:translateX(-102%);transition:transform .3s cubic-bezier(.2,.8,.3,1);
+  padding-top:env(safe-area-inset-top)}
+.drawer.on{transform:translateX(0)}
+.drawer-top{padding:16px 14px 10px;border-bottom:1px solid var(--line)}
+.drawer-title{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+.new-btn{display:flex;align-items:center;gap:9px;width:100%;padding:12px 14px;border-radius:var(--r);
+  border:1px solid var(--line-2);background:rgba(232,176,75,.1);color:var(--brass);font-weight:600;font-size:14px;
+  transition:background .15s}
+.new-btn:hover{background:rgba(232,176,75,.18)}
+.new-btn svg{width:16px;height:16px}
+.convo-list{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:8px}
+.convo{display:flex;align-items:center;gap:8px;padding:11px 12px;border-radius:11px;cursor:pointer;
+  transition:background .12s;position:relative}
+.convo:hover{background:rgba(237,234,246,.05)}
+.convo.on{background:rgba(124,147,255,.14)}
+.convo-name{flex:1;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--paper)}
+.convo-del{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;
+  color:var(--dim);opacity:0;transition:opacity .15s,color .15s,background .15s}
+.convo:hover .convo-del,.convo.on .convo-del{opacity:1}
+.convo-del:hover{color:var(--danger);background:rgba(255,123,114,.12)}
+.convo-del svg{width:15px;height:15px}
+.convo-empty{padding:26px 16px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6}
+.drawer-foot{padding:12px 16px calc(env(safe-area-inset-bottom) + 14px);border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -210,6 +241,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 <div class="app">
   <header class="top">
     <div class="topbar">
+      <button class="icon-btn" id="btnMenu" aria-label="Conversas" title="Conversas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
       <div class="mark">
         <svg class="needle" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 2 L15 12 L12 22 L9 12 Z" fill="#E8B04B"/>
@@ -221,9 +255,6 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
         <div class="sub" id="tagline">assistente de bolso</div>
       </div>
       <div class="spacer"></div>
-      <button class="icon-btn" id="btnNew" aria-label="Nova conversa" title="Nova conversa">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-      </button>
       <button class="icon-btn" id="btnCfg" aria-label="Ajustes" title="Ajustes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
           <circle cx="12" cy="12" r="3.2"/><path d="M12 2v2.6M12 19.4V22M22 12h-2.6M4.6 12H2M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8M18.4 18.4l-1.8-1.8M7.4 7.4 5.6 5.6"/></svg>
@@ -262,6 +293,18 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 </div>
 
 <div class="veil" id="veil"></div>
+
+<aside class="drawer" id="drawer" aria-label="Suas conversas">
+  <div class="drawer-top">
+    <div class="drawer-title">Conversas</div>
+    <button class="new-btn" id="btnNewConvo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nova conversa
+    </button>
+  </div>
+  <div class="convo-list" id="convoList"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
 
 <section class="sheet" id="sheetApps" role="dialog" aria-label="Apps do celular">
   <div class="grab"></div>
@@ -423,6 +466,7 @@ const PERSONAS={
 };
 const DEF={name:'',email:'',persona:'padrao',custom:'',about:'',sky:'cosmos',skyImg:'',dim:70,speak:false,voice:'',rate:1,pitch:1,brain:'auto',tam:2};
 let cfg={...DEF}, history=[], busy=false, voices=[];
+let convos=[], curId=null;  /* lista lateral e conversa aberta */
 
 const $=id=>document.getElementById(id);
 const jget=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch(e){return f}};
@@ -451,7 +495,72 @@ function saveCfg(){
   if(skyImg)jset(K.skyimg,skyImg);else try{localStorage.removeItem(K.skyimg)}catch(e){}
   queueSync();
 }
-function saveChat(){jset(K.chat,history.slice(-40));queueSync()}
+function titleFrom(msgs){
+  const first=msgs.find(m=>m.role==='user');
+  if(!first)return 'Nova conversa';
+  return first.text.replace(/\s+/g,' ').trim().slice(0,42)||'Nova conversa';
+}
+let convTimer=null;
+function saveChat(){
+  if(!TOKEN||!curId)return;
+  clearTimeout(convTimer);
+  convTimer=setTimeout(async()=>{
+    const title=titleFrom(history);
+    try{
+      await apiCall('/conversations/'+curId,{method:'PUT',body:{title,messages:history.slice(-200)}});
+      const c=convos.find(x=>x.id===curId);
+      if(c){c.title=title;c.updated_at=new Date().toISOString();paintConvos()}
+    }catch(e){}
+  },900);
+}
+
+async function loadConvos(){
+  if(!TOKEN){convos=[];paintConvos();return}
+  try{convos=await apiCall('/conversations')}catch(e){convos=[]}
+  paintConvos();
+}
+function paintConvos(){
+  const box=$('convoList');box.innerHTML='';
+  $('drawerFoot').textContent=ME?(ME.name||'')+(ME.email?' · '+ME.email:''):'';
+  if(!TOKEN){box.innerHTML='<div class="convo-empty">Entre na sua conta para ver e salvar suas conversas em qualquer aparelho.</div>';return}
+  if(!convos.length){box.innerHTML='<div class="convo-empty">Nenhuma conversa ainda. Toque em “Nova conversa”.</div>';return}
+  convos.forEach(c=>{
+    const row=document.createElement('div');
+    row.className='convo'+(c.id===curId?' on':'');
+    const name=document.createElement('div');name.className='convo-name';name.textContent=c.title||'Conversa';
+    name.onclick=()=>openConvo(c.id);
+    const del=document.createElement('button');del.className='convo-del';del.setAttribute('aria-label','Apagar');
+    del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>';
+    del.onclick=e=>{e.stopPropagation();delConvo(c.id)};
+    row.append(name,del);box.append(row);
+  });
+}
+async function openConvo(id){
+  try{
+    const d=await apiCall('/conversations/'+id);
+    curId=id;history=Array.isArray(d.messages)?d.messages:[];
+    loadChatFromHistory();paintConvos();closeDrawer();
+  }catch(e){}
+}
+async function newConvo(){
+  if(!TOKEN){openSheet('sheetAuth');return}
+  try{
+    const c=await apiCall('/conversations',{method:'POST',body:{title:'Nova conversa'}});
+    convos.unshift(c);curId=c.id;history=[];greet();paintConvos();closeDrawer();
+  }catch(e){}
+}
+async function delConvo(id){
+  if(!confirm('Apagar esta conversa?'))return;
+  try{await apiCall('/conversations/'+id,{method:'DELETE'})}catch(e){}
+  convos=convos.filter(x=>x.id!==id);
+  if(curId===id){curId=null;history=[];greet()}
+  paintConvos();
+}
+async function ensureConvo(){
+  if(curId)return;
+  const c=await apiCall('/conversations',{method:'POST',body:{title:'Nova conversa'}});
+  convos.unshift(c);curId=c.id;paintConvos();
+}
 function queueSync(){
   if(!TOKEN)return;
   clearTimeout(syncTimer);
@@ -460,7 +569,7 @@ function queueSync(){
 async function pushState(){
   if(!TOKEN)return;
   const {skyImg,...rest}=cfg;  /* imagem de fundo não vai pra nuvem (pesada); fica no aparelho */
-  try{await apiCall('/state',{method:'PUT',body:{cfg:rest,chat:history.slice(-40)}})}catch(e){}
+  try{await apiCall('/state',{method:'PUT',body:{cfg:rest}})}catch(e){}
 }
 async function pullState(){
   const d=await apiCall('/state');
@@ -468,14 +577,12 @@ async function pullState(){
   const local=jget(K.skyimg,'');
   cfg={...DEF,...(d.cfg||{}),skyImg:local};
   jset(K.cfg,d.cfg||{});
-  history=Array.isArray(d.chat)?d.chat:[];
-  jset(K.chat,history);
 }
 function logout(silent){
-  TOKEN=null;ME=null;
+  TOKEN=null;ME=null;convos=[];curId=null;history=[];
   try{localStorage.removeItem(K.token)}catch(e){}
-  if(!silent){history=[];try{localStorage.removeItem(K.chat)}catch(e){}greet()}
-  paintStatus();paintAvatar();paintConta();
+  if(!silent)greet();
+  paintStatus();paintAvatar();paintConta();paintConvos();
 }
 
 /* ---------- fundo ---------- */
@@ -566,7 +673,7 @@ function fmt(t){
     .replace(/(^|\s)\*([^*\n]+)\*/g,'$1<em>$2</em>')
     .replace(/^\s*[-*]\s+/gm,'• ');
 }
-function bubble(role,text,isErr){
+function bubble(role,text,isErr,sources){
   const wrap=document.createElement('div');
   wrap.className='turn'+(role==='user'?' me':'');
   const who=document.createElement('div');who.className='who';
@@ -574,6 +681,11 @@ function bubble(role,text,isErr){
   const b=document.createElement('div');b.className='bubble'+(isErr?' err':'');
   b.innerHTML=fmt(text);
   wrap.append(who,b);
+  if(sources&&sources.length){
+    const s=document.createElement('div');s.className='sources';
+    s.textContent='🌐 fontes: '+sources.join(' · ');
+    wrap.append(s);
+  }
   if(role!=='user'&&!isErr){
     const tools=document.createElement('div');tools.className='tools';
     const cp=document.createElement('button');cp.className='tool';cp.textContent='copiar';
@@ -613,12 +725,7 @@ async function more(btn,wrap){
 function greet(){
   $('stream').innerHTML='';
   const n=cfg.name?cfg.name.split(' ')[0]:'';
-  bubble('model','Olá'+(n?', '+n:'')+'. Estou no seu bolso. Pergunte, peça uma música, um resumo — ou use os atalhos aí embaixo. 🧭');
-}
-function loadChat(){
-  const h=jget(K.chat,[]);
-  if(Array.isArray(h)&&h.length){history=h;$('stream').innerHTML='';h.forEach(m=>bubble(m.role,m.text))}
-  else greet();
+  bubble('model','Olá'+(n?', '+n:'')+'. Estou no seu bolso. Pergunte, peça uma música, um resumo — ou use os atalhos aí embaixo. Já consulto a internet pra te dar dado atual. 🧭');
 }
 
 /* ---------- api ---------- */
@@ -628,22 +735,26 @@ async function ask(msgs){
   const d=await apiCall('/chat',{method:'POST',body:{
     messages:msgs,system:buildSystem(),maxTokens:want,brain:cfg.brain
   }});
-  return {text:d.text,cut:!!d.cut,model:d.model};
+  return {text:d.text,cut:!!d.cut,model:d.model,sources:d.sources||[]};
 }
 async function submit(){
   const text=$('input').value.trim();
   if(!text||busy)return;
+  if(!TOKEN){openSheet('sheetAuth');return}
   $('input').value='';grow();toggle();
+  const firstMsg=history.length===0;
   history.push({role:'user',text});bubble('user',text);
   busy=true;toggle();
   const think=document.createElement('div');think.className='turn';
   think.innerHTML='<div class="who">atlas</div><div class="bubble"><div class="thinking"><i></i><i></i><i></i></div></div>';
   $('stream').append(think);$('stream').scrollTop=$('stream').scrollHeight;
   try{
+    await ensureConvo();
     const r=await ask(history);
     think.remove();
-    const wrap=bubble('model',r.text);
+    const wrap=bubble('model',r.text,false,r.sources);
     history.push({role:'model',text:r.text});saveChat();
+    if(firstMsg)loadConvos();
     if(r.cut)addMore(wrap);
     if(cfg.speak)say(r.text);
   }catch(e){
@@ -690,13 +801,16 @@ $('input').addEventListener('keydown',e=>{
 $('send').addEventListener('click',submit);
 Array.prototype.forEach.call(document.querySelectorAll('.chip'),c=>c.addEventListener('click',()=>{
   const i=$('input');i.value=c.dataset.t;i.focus();i.setSelectionRange(i.value.length,i.value.length);grow();toggle()}));
-$('btnNew').addEventListener('click',()=>{history=[];try{localStorage.removeItem(K.chat)}catch(e){}stopSpeak();greet()});
 
 let open=null;
 function openSheet(id){closeSheet();open=$(id);open.classList.add('on');$('veil').classList.add('on');$('hint').classList.toggle('open',id==='sheetApps')}
-function closeSheet(){if(open)open.classList.remove('on');open=null;$('veil').classList.remove('on');$('hint').classList.remove('open')}
-$('veil').addEventListener('click',closeSheet);
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSheet()});
+function closeSheet(){if(open)open.classList.remove('on');open=null;if(!$('drawer').classList.contains('on'))$('veil').classList.remove('on');$('hint').classList.remove('open')}
+function openDrawer(){$('drawer').classList.add('on');$('veil').classList.add('on')}
+function closeDrawer(){$('drawer').classList.remove('on');if(!open)$('veil').classList.remove('on')}
+$('btnMenu').addEventListener('click',()=>{$('drawer').classList.contains('on')?closeDrawer():openDrawer()});
+$('btnNewConvo').addEventListener('click',newConvo);
+$('veil').addEventListener('click',()=>{closeSheet();closeDrawer()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();closeDrawer()}});
 $('btnApps').addEventListener('click',()=>{(open&&open.id==='sheetApps')?closeSheet():openSheet('sheetApps')});
 Array.prototype.forEach.call(document.querySelectorAll('.tile'),t=>t.addEventListener('click',closeSheet));
 
@@ -805,10 +919,11 @@ async function afterAuth(d,msg){
   const local=jget(K.skyimg,'');
   cfg={...DEF,...(d.cfg||{}),skyImg:local};
   jset(K.cfg,d.cfg||{});
-  history=Array.isArray(d.chat)&&d.chat.length?d.chat:[];
-  jset(K.chat,history);
   cfg.name=cfg.name||d.user.name;
-  paintSky();paintAvatar();paintStatus();paintConta();loadChatFromHistory();
+  curId=null;history=[];
+  paintSky();paintAvatar();paintStatus();paintConta();greet();
+  await loadConvos();
+  if(convos.length)await openConvo(convos[0].id);
   note('authNote',msg,1);setTimeout(closeSheet,700);
 }
 $('btnCreate').addEventListener('click',async()=>{
@@ -885,14 +1000,16 @@ function fillCfg(){
 const stored=jget(K.cfg,{});
 Object.keys(DEF).forEach(k=>{cfg[k]=(stored&&stored[k]!==undefined)?stored[k]:DEF[k]});
 cfg.skyImg=jget(K.skyimg,'');
-paintSky();paintAvatar();paintStatus();paintConta();loadChat();grow();toggle();
+paintSky();paintAvatar();paintStatus();paintConta();greet();grow();toggle();
 
 (async function boot(){
   if(TOKEN){
     try{
       await pullState();
       cfg.skyImg=jget(K.skyimg,'');
-      paintSky();paintAvatar();paintStatus();paintConta();loadChatFromHistory();
+      paintSky();paintAvatar();paintStatus();paintConta();
+      await loadConvos();
+      if(convos.length)await openConvo(convos[0].id);else greet();
     }catch(e){/* token velho: logout já tratou */}
   }else{
     setTimeout(()=>openSheet('sheetAuth'),500);
