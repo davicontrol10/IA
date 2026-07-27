@@ -215,56 +215,95 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 .tabbtn.on::before{content:"";position:absolute;top:0;left:50%;translate:-50% 0;width:26px;height:2px;border-radius:2px;background:var(--accent,#7C93FF)}
 
 /* ============ DASHBOARD ============ */
-#view-dashboard{padding:18px 16px 20px;gap:8px}
+#view-dashboard{padding:16px 14px 20px;gap:4px}
 .hero{display:flex;gap:14px;align-items:center;padding:16px;border-radius:20px;
-  border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(124,147,255,.14),rgba(17,23,55,.5));
+  border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(124,147,255,.16),rgba(17,23,55,.55));
   position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;
-  background:radial-gradient(circle,var(--accent,#7C93FF),transparent 70%);opacity:.18}
-.hero-mascot{flex:none;width:84px;height:84px;filter:drop-shadow(0 6px 18px rgba(124,147,255,.35));animation:float 4s ease-in-out infinite}
+.hero::after{content:"";position:absolute;right:-30px;top:-30px;width:150px;height:150px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent,#7C93FF),transparent 70%);opacity:.2}
+.hero-mascot{flex:none;width:88px;height:88px;filter:drop-shadow(0 6px 20px rgba(124,147,255,.4));animation:float 4s ease-in-out infinite}
 .hero-mascot svg{width:100%;height:100%}
 @keyframes float{50%{transform:translateY(-6px)}}
 .hero-hi{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em;line-height:1.2}
 .hero-hi b{color:var(--accent,#7C93FF)}
-.hero-sub{font-size:12.5px;color:var(--dim);margin:5px 0 10px;line-height:1.4}
+.hero-sub{font-size:12px;color:var(--dim);margin:5px 0 10px;line-height:1.45}
 .hero-online{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;
   letter-spacing:.1em;text-transform:uppercase;color:#48D19B;padding:4px 10px;border-radius:100px;
   border:1px solid rgba(72,209,155,.3);background:rgba(72,209,155,.1)}
 .hero-online i{width:6px;height:6px;border-radius:50%;background:#48D19B;box-shadow:0 0 8px #48D19B;animation:pulse 2.4s infinite}
-.sec-head{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:16px 2px 10px}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.card{padding:15px;border-radius:16px;border:1px solid var(--line);background:rgba(17,23,55,.55);backdrop-filter:blur(8px);position:relative;overflow:hidden}
-.card-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
-.card-v{font-family:var(--display);font-weight:600;font-size:22px;margin-top:6px;letter-spacing:-.02em}
-.card-x{font-size:11px;color:var(--dim);margin-top:2px}
-.ring{position:absolute;right:12px;top:12px;width:34px;height:34px}
+
+.mon-head{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 12px}
+.mon-head>span:first-child{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.mon-live{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#48D19B}
+.mon-live i{width:5px;height:5px;border-radius:50%;background:#48D19B;box-shadow:0 0 6px #48D19B;animation:pulse 2s infinite}
+
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.gauge{padding:15px;border-radius:18px;border:1px solid var(--line);background:rgba(17,23,55,.6);
+  backdrop-filter:blur(8px);display:flex;flex-direction:column;gap:2px;position:relative;overflow:hidden}
+.gauge-top{display:flex;align-items:center;justify-content:space-between}
+.gauge-l{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.gauge-ring{position:relative;width:66px;height:66px;margin:8px auto 4px}
+.gauge-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge-ring .bg{stroke:rgba(237,234,246,.08)}
+.gauge-ring .fg{stroke:var(--gcol,#7C93FF);stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(.3,.9,.4,1)}
+.gauge-pct{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:17px}
+.gauge-main{font-family:var(--display);font-weight:600;font-size:15px;text-align:center;margin-top:2px}
+.gauge-sub{font-size:10.5px;color:var(--dim);text-align:center;margin-top:1px}
+.gauge-big{font-family:var(--display);font-weight:700;font-size:30px;text-align:center;margin:12px 0 2px;color:var(--gcol,#7C93FF)}
+.wave{height:34px;margin-top:8px}
+.wave path{stroke:var(--gcol,#7C93FF);stroke-width:2;fill:none}
+.wave .fillw{fill:var(--gcol,#7C93FF);opacity:.12;stroke:none}
+
+.sec-head{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:20px 2px 10px}
 .quick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .qcard{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 6px;border-radius:16px;
   border:1px solid var(--line);background:rgba(17,23,55,.55);font-size:12px;color:var(--paper);transition:.15s}
-.qcard:active{background:rgba(124,147,255,.12)}
+.qcard:active{background:rgba(124,147,255,.14)}
 .qcard span{font-size:22px}
 
 /* ============ MONITOR / N8N ============ */
-#view-monitor{padding:18px 16px 20px}
-.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
-.panel-title{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:-.02em}
-.panel-sub{font-size:12px;color:var(--dim);margin-top:2px}
-.mini-btn{padding:9px 14px;border-radius:100px;border:1px solid var(--accent,#7C93FF);color:var(--accent,#7C93FF);
-  font-weight:600;font-size:13px;background:rgba(124,147,255,.1)}
-.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
-.stat{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(17,23,55,.55);text-align:center}
-.stat-n{font-family:var(--display);font-weight:700;font-size:24px;color:var(--accent,#7C93FF)}
-.stat-l{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:3px}
-.n8n-empty{text-align:center;padding:34px 20px;border-radius:20px;border:1px dashed var(--line-2);background:rgba(17,23,55,.35)}
-.n8n-empty-icon{font-size:38px;margin-bottom:10px}
-.n8n-empty-t{font-family:var(--display);font-weight:600;font-size:16px;margin-bottom:6px}
-.n8n-empty-p{font-size:13px;color:var(--dim);line-height:1.6;max-width:300px;margin:0 auto 16px}
+#view-monitor{padding:16px 14px 20px}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px}
+.panel-title{font-family:var(--display);font-weight:700;font-size:21px;letter-spacing:-.02em}
+.panel-sub{font-size:11.5px;color:var(--dim);margin-top:3px;max-width:200px;line-height:1.4}
+.mini-btn{flex:none;padding:10px 14px;border-radius:12px;border:1px solid var(--accent,#7C93FF);color:#fff;
+  font-weight:600;font-size:12.5px;background:linear-gradient(135deg,var(--accent,#7C93FF),rgba(124,147,255,.5))}
+.n8n-info{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+.ni{padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:rgba(17,23,55,.5)}
+.ni-l{font-size:11px;color:var(--dim);margin-bottom:4px}
+.ni-v{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent,#7C93FF);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.n8n-tabs{display:flex;gap:6px;margin-bottom:14px}
+.n8t{flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--line);font-size:11.5px;font-weight:500;color:var(--dim);background:rgba(17,23,55,.4)}
+.n8t.on{border-color:var(--accent,#7C93FF);color:#fff;background:rgba(124,147,255,.14)}
+.n8n-search{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(10,14,36,.6);margin-bottom:11px}
+.n8n-search svg{width:16px;height:16px;color:var(--dim);flex:none}
+.n8n-search input{flex:1;border:0;outline:0;background:none;color:var(--paper);font:inherit;font-size:14px}
+.n8n-filters{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:2px}
+.nf{flex:none;padding:7px 13px;border-radius:100px;border:1px solid var(--line);font-size:12px;color:var(--dim);white-space:nowrap;background:rgba(17,23,55,.4)}
+.nf.on{border-color:var(--accent,#7C93FF);color:#fff;background:var(--accent,#7C93FF)}
+.preview-banner{font-size:11.5px;color:var(--brass);background:rgba(232,176,75,.1);border:1px solid rgba(232,176,75,.25);
+  border-radius:12px;padding:10px 13px;margin-bottom:14px;line-height:1.5}
+.flows{display:flex;flex-direction:column;gap:11px}
+.flow{padding:15px;border-radius:16px;border:1px solid var(--line);background:rgba(17,23,55,.55);position:relative}
+.flow-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.flow-tag{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:6px;background:rgba(124,147,255,.16);color:var(--accent,#7C93FF);letter-spacing:.05em}
+.flow-name{font-weight:600;font-size:14px;flex:1;line-height:1.3}
+.flow-status{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.flow-status.act{color:#48D19B}.flow-status.pau{color:var(--brass)}
+.flow-status i{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.flow-desc{font-size:12.5px;color:var(--dim);line-height:1.5;margin-bottom:12px}
+.flow-foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.flow-stat{font-size:11px;color:var(--dim)}
+.flow-stat b{color:var(--paper);font-weight:600}
+.flow-run{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;
+  background:linear-gradient(135deg,#48D19B,#2FA875);color:#04120C;font-weight:700;font-size:12px}
+.flow-run svg{width:12px;height:12px}
+.flow-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.flow-hash{font-family:var(--mono);font-size:9.5px;color:var(--dim);opacity:.7}
 
 /* conversa ocupa a aba inteira */
 #view-conversas{padding:0}
 #view-conversas .stream{flex:1}
-
-/* microfone no campo */
 .mic-btn{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--dim);
   border:1px solid var(--line);transition:.15s}
 .mic-btn.on{color:#fff;background:var(--danger);border-color:var(--danger);animation:pulse 1.4s infinite}
@@ -310,6 +349,26 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 .drawer-foot{padding:12px 16px calc(env(safe-area-inset-bottom) + 14px);border-top:1px solid var(--line);
   font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============ VERSÃO PC (telas largas) ============ */
+@media (min-width:900px){
+  .app{max-width:1100px}
+  .drawer{transform:translateX(0);width:280px;border-right:1px solid var(--line);position:relative;z-index:5}
+  .drawer.on{transform:translateX(0)}
+  #btnMenu{display:none}
+  body .app{flex-direction:row}
+  .pc-wrap{display:flex;flex:1;min-width:0}
+  .gauges{grid-template-columns:repeat(4,1fr)}
+  .n8n-info{grid-template-columns:repeat(4,1fr)}
+  .cards,.gauges{max-width:900px}
+  .stream,.rail,.composer{max-width:820px;margin-left:auto;margin-right:auto;width:100%}
+  #view-dashboard,#view-monitor{max-width:900px;margin:0 auto;width:100%}
+  .hero-hi{font-size:24px}
+  .tabbar{max-width:none}
+}
+@media (min-width:900px){
+  .drawer .drawer-top{padding-top:16px}
+}
 </style>
 </head>
 <body>
@@ -335,8 +394,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
       </div>
       <div class="spacer"></div>
       <button class="icon-btn" id="btnCfg" aria-label="Ajustes" title="Ajustes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-          <circle cx="12" cy="12" r="3.2"/><path d="M12 2v2.6M12 19.4V22M22 12h-2.6M4.6 12H2M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8M18.4 18.4l-1.8-1.8M7.4 7.4 5.6 5.6"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
       <button class="avatar" id="btnMe" aria-label="Conta">A</button>
     </div>
@@ -350,16 +410,21 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
         <div class="hero-mascot" id="heroMascot"></div>
         <div class="hero-text">
           <div class="hero-hi">Olá! Eu sou o <b id="heroName">ATLAS IA</b>.</div>
-          <div class="hero-sub">Seu assistente inteligente, com você em qualquer aparelho.</div>
+          <div class="hero-sub">Monitore, converse e automatize — em tempo real, com inteligência artificial.</div>
           <div class="hero-online"><i></i> IA Online</div>
         </div>
       </div>
-      <div class="sec-head">Seu aparelho</div>
-      <div class="cards" id="deviceCards"></div>
+
+      <div class="mon-head">
+        <span>Monitoramento em tempo real</span>
+        <span class="mon-live"><i></i> Atualizado agora</span>
+      </div>
+      <div class="gauges" id="gauges"></div>
+
       <div class="sec-head">Atalhos rápidos</div>
       <div class="quick" id="quickCards">
         <button class="qcard" data-go="conversas"><span>💬</span>Conversar</button>
-        <button class="qcard" data-go="monitor"><span>🔧</span>Automações</button>
+        <button class="qcard" data-go="monitor"><span>⚡</span>Automações</button>
         <button class="qcard" data-act="cfg"><span>⚙️</span>Ajustes</button>
       </div>
     </section>
@@ -368,22 +433,36 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
     <section class="view" id="view-monitor">
       <div class="panel-head">
         <div>
-          <div class="panel-title">Automações &amp; N8N</div>
-          <div class="panel-sub">Tarefas, agentes e processos inteligentes</div>
+          <div class="panel-title">N8N Stack</div>
+          <div class="panel-sub">Tarefas, agentes, webhooks e processos inteligentes</div>
         </div>
-        <button class="mini-btn" id="btnNewFlow">+ Novo</button>
+        <button class="mini-btn" id="btnNewFlow">+ Novo processo</button>
       </div>
-      <div class="stat-row" id="n8nStats">
-        <div class="stat"><div class="stat-n" id="stFlows">—</div><div class="stat-l">Fluxos</div></div>
-        <div class="stat"><div class="stat-n" id="stActive">—</div><div class="stat-l">Ativos</div></div>
-        <div class="stat"><div class="stat-n" id="stRuns">—</div><div class="stat-l">Execuções</div></div>
+
+      <div class="n8n-info">
+        <div class="ni"><div class="ni-l">🖥️ Host</div><div class="ni-v" id="niHost">não conectado</div></div>
+        <div class="ni"><div class="ni-l">⚡ Executando</div><div class="ni-v" id="niRun">—</div></div>
+        <div class="ni"><div class="ni-l">📈 Execuções</div><div class="ni-v" id="niRuns">—</div></div>
+        <div class="ni"><div class="ni-l">🤖 Agente</div><div class="ni-v" id="niAgent">ATLAS-IA</div></div>
       </div>
-      <div class="n8n-empty" id="n8nEmpty">
-        <div class="n8n-empty-icon">🔌</div>
-        <div class="n8n-empty-t">Nenhuma automação conectada ainda</div>
-        <div class="n8n-empty-p">Quando você ligar o N8N, seus robôs aparecem aqui — ligar, desligar e acompanhar as execuções em tempo real.</div>
-        <button class="btn primary" id="btnLearnN8n" style="max-width:220px;margin:6px auto 0">Como funciona?</button>
+
+      <div class="n8n-tabs">
+        <button class="n8t on">Processos &amp; Fluxos</button>
+        <button class="n8t">Instância</button>
+        <button class="n8t">Logs</button>
       </div>
+
+      <div class="n8n-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input type="text" placeholder="Buscar tarefas ou webhooks" id="n8nSearch">
+      </div>
+      <div class="n8n-filters">
+        <button class="nf on">Todas</button><button class="nf">Email</button><button class="nf">DevOps</button>
+        <button class="nf">Cloud</button><button class="nf">CRM</button><button class="nf">Segurança</button><button class="nf">Dados</button>
+      </div>
+
+      <div class="preview-banner">✨ Pré-visualização — conecte seu N8N para ver seus fluxos de verdade aqui.</div>
+      <div class="flows" id="flowList"></div>
     </section>
 
     <!-- ABA CONVERSAS -->
@@ -447,6 +526,17 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
   <div class="convo-list" id="convoList"></div>
   <div class="drawer-foot" id="drawerFoot"></div>
 </aside>
+
+<section class="sheet" id="sheetFlow" role="dialog" aria-label="Nova automação">
+  <div class="grab"></div>
+  <h2>Nova automação</h2>
+  <p>Descreva em português o que você quer que aconteça sozinho. A IA monta o fluxo no seu N8N pra você.</p>
+  <label class="lbl" for="flowDesc">O que a automação deve fazer?</label>
+  <textarea class="box" id="flowDesc" style="min-height:110px" placeholder="Ex.: Todo dia às 8h, pegar a cotação do dólar e me mandar. Ou: quando chegar um formulário novo, salvar numa planilha."></textarea>
+  <div class="row"><button class="btn primary" id="btnMakeFlow">Criar com a IA</button></div>
+  <div class="note" id="noteFlow"></div>
+  <p style="font-size:11.5px;margin-top:14px;color:var(--dim)">A automação é criada <b style="color:var(--dim);font-family:var(--body);font-weight:600">desligada</b>, pra você revisar antes de ligar. Conectar serviços externos (WhatsApp, e-mail) pode precisar de login dentro do N8N.</p>
+</section>
 
 <section class="sheet" id="sheetApps" role="dialog" aria-label="Apps do celular">
   <div class="grab"></div>
@@ -1253,7 +1343,7 @@ function switchTab(t){
   Array.prototype.forEach.call(document.querySelectorAll('.view'),v=>v.classList.toggle('on',v.id==='view-'+t));
   Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='dashboard'){paintHero();paintDevice()}
-  if(t==='monitor'){/* camada 2 liga o N8N aqui */}
+  if(t==='monitor'){paintFlows();loadN8n()}
 }
 Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 Array.prototype.forEach.call(document.querySelectorAll('.qcard'),q=>q.addEventListener('click',()=>{
@@ -1264,8 +1354,17 @@ $('btnLearnN8n')&&$('btnLearnN8n').addEventListener('click',()=>{
   switchTab('conversas');
   $('input').value='Me explica de forma simples o que é o N8N e como ele pode me ajudar.';grow();toggle();$('input').focus();
 });
-$('btnNewFlow')&&$('btnNewFlow').addEventListener('click',()=>{
-  alert('Em breve: criar automações descrevendo o que você quer. Por enquanto, conecte seu N8N para ver seus fluxos aqui.');
+$('btnNewFlow')&&$('btnNewFlow').addEventListener('click',()=>openSheet('sheetFlow'));
+$('btnMakeFlow')&&$('btnMakeFlow').addEventListener('click',async()=>{
+  const desc=$('flowDesc').value.trim();
+  if(!desc){note('noteFlow','Descreva o que você quer.');return}
+  note('noteFlow','A IA está montando o fluxo…',1);
+  try{
+    const d=await apiCall('/n8n/create',{method:'POST',body:{description:desc}});
+    note('noteFlow','Pronto! Criei "'+(d.name||'sua automação')+'" com '+d.nodes+' passo(s). Está desligada — revise e ligue na lista.',1);
+    $('flowDesc').value='';
+    setTimeout(()=>{closeSheet();switchTab('monitor')},1500);
+  }catch(e){note('noteFlow',e.message)}
 });
 
 /* ---------- mascote + accent ---------- */
@@ -1280,31 +1379,125 @@ function paintHero(){
   if(cfg.name)$('heroName').textContent='ATLAS';
 }
 
-/* ---------- cartões reais do aparelho ---------- */
+/* ---------- medidores circulares (dados reais do aparelho) ---------- */
+function ring(pct,color,inner){
+  const r=28,c=2*Math.PI*r,off=c*(1-Math.max(0,Math.min(1,pct/100)));
+  return `<div class="gauge-ring" style="--gcol:${color}">
+    <svg viewBox="0 0 66 66"><circle class="bg" cx="33" cy="33" r="${r}" fill="none" stroke-width="6"/>
+    <circle class="fg" cx="33" cy="33" r="${r}" fill="none" stroke-width="6" stroke-dasharray="${c}" stroke-dashoffset="${off}"/></svg>
+    <div class="gauge-pct">${inner}</div></div>`;
+}
 function paintDevice(){
-  const box=$('deviceCards');if(!box)return;
-  const cards=[];
-  // bateria (real, quando o navegador deixa)
-  cards.push({l:'Bateria',id:'cBat',v:'…',x:'carregando'});
-  cards.push({l:'Conexão',id:'cNet',v:navigator.onLine?'Online':'Offline',x:conType()});
-  cards.push({l:'Memória',id:'cMem',v:(navigator.deviceMemory?navigator.deviceMemory+' GB':'—'),x:'aproximada'});
-  cards.push({l:'Tela',id:'cScr',v:(screen.width+'×'+screen.height),x:(window.devicePixelRatio||1)+'x'});
-  box.innerHTML=cards.map(c=>`<div class="card"><div class="card-l">${c.l}</div><div class="card-v" id="${c.id}">${c.v}</div><div class="card-x">${c.x}</div></div>`).join('');
-  // bateria via API
+  const box=$('gauges');if(!box)return;
+  const A=ACCENTS[cfg.accent]||ACCENTS.signal;
+  const cores=navigator.hardwareConcurrency||'—';
+  const mem=navigator.deviceMemory?navigator.deviceMemory+' GB':'—';
+  const con=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  const down=con&&con.downlink?con.downlink.toFixed(0):null;
+  const net=navigator.onLine?(con&&con.effectiveType?con.effectiveType.toUpperCase():'Online'):'Offline';
+  box.innerHTML=
+    `<div class="gauge"><div class="gauge-top"><span class="gauge-l">Bateria</span></div>
+       <div id="gBat">${ring(0,'#48D19B','…')}</div>
+       <div class="gauge-main" id="gBatM">carregando</div><div class="gauge-sub" id="gBatS">&nbsp;</div></div>
+     <div class="gauge"><div class="gauge-top"><span class="gauge-l">Armazenamento</span></div>
+       <div id="gSto">${ring(0,A,'…')}</div>
+       <div class="gauge-main" id="gStoM">calculando</div><div class="gauge-sub">do app</div></div>
+     <div class="gauge"><div class="gauge-top"><span class="gauge-l">Processador</span></div>
+       <div class="gauge-big" style="--gcol:${A}">${cores}</div>
+       <div class="gauge-main">núcleos</div><div class="gauge-sub">${navigator.platform||'seu aparelho'}</div></div>
+     <div class="gauge"><div class="gauge-top"><span class="gauge-l">Rede</span></div>
+       <div class="gauge-big" style="--gcol:#48D19B">${down?down:net}</div>
+       <div class="gauge-main">${down?'Mbps':'conexão'}</div>
+       <svg class="wave" viewBox="0 0 120 34" preserveAspectRatio="none" style="--gcol:#48D19B"><path class="fillw" d="M0 26 Q15 10 30 20 T60 18 T90 12 T120 20 L120 34 L0 34Z"/><path d="M0 26 Q15 10 30 20 T60 18 T90 12 T120 20"/></svg>
+       <div class="gauge-sub" style="margin-top:-2px">${net}${mem!=='—'?' · '+mem+' RAM':''}</div></div>`;
+  // bateria real
   if(navigator.getBattery){
     navigator.getBattery().then(b=>{
-      const set=()=>{const e=$('cBat');if(e){e.textContent=Math.round(b.level*100)+'%';e.nextElementSibling.textContent=b.charging?'carregando':'na bateria'}};
-      set();b.addEventListener('levelchange',set);b.addEventListener('chargingchange',set);
-    }).catch(()=>{const e=$('cBat');if(e){e.textContent='—';e.nextElementSibling.textContent='indisponível'}});
-  }else{const e=$('cBat');if(e){e.textContent='—';e.nextElementSibling.textContent='indisponível'}}
+      const upd=()=>{const p=Math.round(b.level*100);const e=$('gBat');
+        if(e){e.innerHTML=ring(p,'#48D19B',p+'%');$('gBatM').textContent=b.charging?'carregando':'na bateria';}};
+      upd();b.addEventListener('levelchange',upd);b.addEventListener('chargingchange',upd);
+    }).catch(()=>{const e=$('gBat');if(e){e.innerHTML=ring(0,'#48D19B','—');$('gBatM').textContent='indisponível'}});
+  }else{const e=$('gBat');if(e){e.innerHTML=ring(0,'#48D19B','—');$('gBatM').textContent='indisponível'}}
+  // armazenamento real (do app)
+  if(navigator.storage&&navigator.storage.estimate){
+    navigator.storage.estimate().then(s=>{
+      const used=s.usage||0,q=s.quota||1,p=Math.round(used/q*100);
+      const gb=v=>v>=1e9?(v/1e9).toFixed(1)+' GB':(v/1e6).toFixed(0)+' MB';
+      const e=$('gSto');if(e){e.innerHTML=ring(Math.max(p,2),A,p+'%');$('gStoM').textContent=gb(used)+' / '+gb(q)}
+    }).catch(()=>{const e=$('gSto');if(e){e.innerHTML=ring(0,A,'—');$('gStoM').textContent='indisponível'}});
+  }else{const e=$('gSto');if(e){e.innerHTML=ring(0,A,'—');$('gStoM').textContent='indisponível'}}
 }
-function conType(){
-  const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-  if(!c)return navigator.onLine?'conectado':'sem rede';
-  return (c.effectiveType||'').toUpperCase()||'conectado';
+
+/* ---------- fluxos do N8N (reais quando conectado) ---------- */
+let n8nConnected=false;
+async function loadN8n(){
+  if(!TOKEN)return;
+  try{
+    const st=await apiCall('/n8n/status');
+    n8nConnected=!!st.connected;
+    if(st.connected){
+      $('niHost').textContent='conectado';
+      $('niRun').textContent=(st.active||0)+' / '+(st.total||0);
+      $('niRuns').textContent=(st.runs||0)+' runs';
+      const pv=document.querySelector('.preview-banner');if(pv)pv.style.display='none';
+      const wf=await apiCall('/n8n/workflows');
+      paintRealFlows(wf.workflows||[]);
+    }else{
+      $('niHost').textContent='não conectado';
+      const pv=document.querySelector('.preview-banner');if(pv)pv.style.display='';
+      paintFlows(); // demo
+    }
+  }catch(e){paintFlows()}
 }
-window.addEventListener('online',()=>{if(tab==='dashboard')paintDevice()});
-window.addEventListener('offline',()=>{if(tab==='dashboard')paintDevice()});
+function paintRealFlows(list){
+  const box=$('flowList');if(!box)return;
+  if(!list.length){box.innerHTML='<div class="preview-banner" style="display:block">Nenhum fluxo ainda. Toque em “+ Novo processo” e descreva o que quer que a IA monta pra você.</div>';return}
+  box.innerHTML='';
+  list.forEach(f=>{
+    const el=document.createElement('div');el.className='flow';
+    el.innerHTML=`<div class="flow-top">
+        <span class="flow-tag">n8n</span>
+        <span class="flow-name">${(f.name||'Fluxo').replace(/</g,'&lt;')}</span>
+        <span class="flow-status ${f.active?'act':'pau'}"><i></i>${f.active?'Ativo':'Pausado'}</span>
+      </div>
+      <div class="flow-desc">${f.nodes} passo(s) · atualizado recentemente</div>
+      <div class="flow-foot">
+        <span class="flow-stat">Passos <b>${f.nodes}</b></span>
+        <button class="flow-run" data-id="${f.id}" data-act="${f.active?'deactivate':'activate'}">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="${f.active?'M6 5h4v14H6zM14 5h4v14h-4z':'M8 5v14l11-7z'}"/></svg>${f.active?'Desligar':'Ligar'}</button>
+      </div>`;
+    el.querySelector('.flow-run').onclick=async(ev)=>{
+      const b=ev.currentTarget;b.textContent='…';
+      try{await apiCall('/n8n/workflows/'+b.dataset.id+'/'+b.dataset.act,{method:'POST'});loadN8n()}
+      catch(e){alert(e.message);loadN8n()}
+    };
+    box.append(el);
+  });
+}
+/* ---------- cartões de exemplo (quando N8N não conectado) ---------- */
+const DEMO_FLOWS=[
+  {tag:'wf-01',name:'Triagem automática de e-mails',status:'act',desc:'Lê e-mails novos, resume com a IA e te avisa no que for importante.',runs:142,ok:'98.6%',tags:['email','ia']},
+  {tag:'wf-02',name:'Pipeline DevOps → Deploy',status:'act',desc:'A cada push no GitHub, roda os testes e sobe a nova versão sozinho.',runs:89,ok:'96.1%',tags:['github','deploy']},
+  {tag:'wf-03',name:'Monitoramento → Alertas',status:'pau',desc:'Vigia eventos suspeitos e manda alerta pro seu canal quando algo foge do normal.',runs:67,ok:'91.0%',tags:['segurança','alertas']},
+];
+function paintFlows(){
+  const box=$('flowList');if(!box)return;
+  box.innerHTML=DEMO_FLOWS.map(f=>`
+    <div class="flow">
+      <div class="flow-top">
+        <span class="flow-tag">n8n-${f.tag}</span>
+        <span class="flow-name">${f.name}</span>
+        <span class="flow-status ${f.status}"><i></i>${f.status==='act'?'Ativo':'Pausado'}</span>
+      </div>
+      <div class="flow-desc">${f.desc}</div>
+      <div class="flow-foot">
+        <span class="flow-stat">Execuções <b>${f.runs}</b></span>
+        <span class="flow-stat">Sucesso <b>${f.ok}</b></span>
+        <span class="flow-run"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Executar</span>
+      </div>
+      <div class="flow-tags">${f.tags.map(t=>'<span class="flow-hash">#'+t+'</span>').join('')}</div>
+    </div>`).join('');
+}
 
 /* ---------- ditado por voz (fala -> texto) ---------- */
 let recog=null,recording=false;
