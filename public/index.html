@@ -200,7 +200,86 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
   font-size:11.5px;color:var(--paper);text-decoration:none}
 .tile:active{background:rgba(237,234,246,.09)}
 .tile span{font-size:23px;line-height:1}
+/* ============ ABAS / NAVEGAÇÃO ============ */
+.body{flex:1;position:relative;overflow:hidden;display:flex}
+.view{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;overscroll-behavior:contain}
+.view.on{display:flex}
+#view-conversas.on{display:flex}
+.tabbar{flex:none;display:flex;border-top:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(17,23,55,.4),rgba(17,23,55,.95));backdrop-filter:blur(16px);
+  padding-bottom:env(safe-area-inset-bottom)}
+.tabbtn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px 8px;color:var(--dim);transition:color .15s;position:relative}
+.tabbtn svg{width:22px;height:22px}
+.tabbtn span{font-size:10px;font-weight:500;letter-spacing:.02em}
+.tabbtn.on{color:var(--accent,#7C93FF)}
+.tabbtn.on::before{content:"";position:absolute;top:0;left:50%;translate:-50% 0;width:26px;height:2px;border-radius:2px;background:var(--accent,#7C93FF)}
+
+/* ============ DASHBOARD ============ */
+#view-dashboard{padding:18px 16px 20px;gap:8px}
+.hero{display:flex;gap:14px;align-items:center;padding:16px;border-radius:20px;
+  border:1px solid var(--line-2);background:linear-gradient(135deg,rgba(124,147,255,.14),rgba(17,23,55,.5));
+  position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent,#7C93FF),transparent 70%);opacity:.18}
+.hero-mascot{flex:none;width:84px;height:84px;filter:drop-shadow(0 6px 18px rgba(124,147,255,.35));animation:float 4s ease-in-out infinite}
+.hero-mascot svg{width:100%;height:100%}
+@keyframes float{50%{transform:translateY(-6px)}}
+.hero-hi{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.02em;line-height:1.2}
+.hero-hi b{color:var(--accent,#7C93FF)}
+.hero-sub{font-size:12.5px;color:var(--dim);margin:5px 0 10px;line-height:1.4}
+.hero-online{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;
+  letter-spacing:.1em;text-transform:uppercase;color:#48D19B;padding:4px 10px;border-radius:100px;
+  border:1px solid rgba(72,209,155,.3);background:rgba(72,209,155,.1)}
+.hero-online i{width:6px;height:6px;border-radius:50%;background:#48D19B;box-shadow:0 0 8px #48D19B;animation:pulse 2.4s infinite}
+.sec-head{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:16px 2px 10px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{padding:15px;border-radius:16px;border:1px solid var(--line);background:rgba(17,23,55,.55);backdrop-filter:blur(8px);position:relative;overflow:hidden}
+.card-l{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.card-v{font-family:var(--display);font-weight:600;font-size:22px;margin-top:6px;letter-spacing:-.02em}
+.card-x{font-size:11px;color:var(--dim);margin-top:2px}
+.ring{position:absolute;right:12px;top:12px;width:34px;height:34px}
+.quick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.qcard{display:flex;flex-direction:column;align-items:center;gap:7px;padding:16px 6px;border-radius:16px;
+  border:1px solid var(--line);background:rgba(17,23,55,.55);font-size:12px;color:var(--paper);transition:.15s}
+.qcard:active{background:rgba(124,147,255,.12)}
+.qcard span{font-size:22px}
+
+/* ============ MONITOR / N8N ============ */
+#view-monitor{padding:18px 16px 20px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.panel-title{font-family:var(--display);font-weight:600;font-size:20px;letter-spacing:-.02em}
+.panel-sub{font-size:12px;color:var(--dim);margin-top:2px}
+.mini-btn{padding:9px 14px;border-radius:100px;border:1px solid var(--accent,#7C93FF);color:var(--accent,#7C93FF);
+  font-weight:600;font-size:13px;background:rgba(124,147,255,.1)}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{padding:14px;border-radius:16px;border:1px solid var(--line);background:rgba(17,23,55,.55);text-align:center}
+.stat-n{font-family:var(--display);font-weight:700;font-size:24px;color:var(--accent,#7C93FF)}
+.stat-l{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:3px}
+.n8n-empty{text-align:center;padding:34px 20px;border-radius:20px;border:1px dashed var(--line-2);background:rgba(17,23,55,.35)}
+.n8n-empty-icon{font-size:38px;margin-bottom:10px}
+.n8n-empty-t{font-family:var(--display);font-weight:600;font-size:16px;margin-bottom:6px}
+.n8n-empty-p{font-size:13px;color:var(--dim);line-height:1.6;max-width:300px;margin:0 auto 16px}
+
+/* conversa ocupa a aba inteira */
+#view-conversas{padding:0}
+#view-conversas .stream{flex:1}
+
+/* microfone no campo */
+.mic-btn{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--dim);
+  border:1px solid var(--line);transition:.15s}
+.mic-btn.on{color:#fff;background:var(--danger);border-color:var(--danger);animation:pulse 1.4s infinite}
+.mic-btn svg{width:17px;height:17px}
+
 .hidden{display:none!important}
+.mascots{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mascot-o{aspect-ratio:1;border-radius:16px;border:1px solid var(--line);background:rgba(10,14,36,.6);
+  display:grid;place-items:center;padding:10px;transition:.15s}
+.mascot-o svg{width:100%;height:100%}
+.mascot-o.on{border-color:var(--accent,#7C93FF);box-shadow:0 0 0 1px var(--accent,#7C93FF)}
+.accents{display:flex;gap:12px}
+.accent-o{width:38px;height:38px;border-radius:50%;border:2px solid transparent;transition:.15s;position:relative}
+.accent-o.on{border-color:#fff}
+.accent-o.on::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:700}
 
 /* ============ GAVETA DE CONVERSAS ============ */
 .drawer{position:fixed;top:0;left:0;bottom:0;z-index:22;width:min(84vw,320px);
@@ -264,32 +343,95 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
     <div class="status" id="status"><i class="dot"></i><span id="statusText">verificando</span></div>
   </header>
 
-  <main class="stream" id="stream" aria-live="polite"></main>
+  <main class="body">
+    <!-- ABA DASHBOARD -->
+    <section class="view" id="view-dashboard">
+      <div class="hero">
+        <div class="hero-mascot" id="heroMascot"></div>
+        <div class="hero-text">
+          <div class="hero-hi">Olá! Eu sou o <b id="heroName">ATLAS IA</b>.</div>
+          <div class="hero-sub">Seu assistente inteligente, com você em qualquer aparelho.</div>
+          <div class="hero-online"><i></i> IA Online</div>
+        </div>
+      </div>
+      <div class="sec-head">Seu aparelho</div>
+      <div class="cards" id="deviceCards"></div>
+      <div class="sec-head">Atalhos rápidos</div>
+      <div class="quick" id="quickCards">
+        <button class="qcard" data-go="conversas"><span>💬</span>Conversar</button>
+        <button class="qcard" data-go="monitor"><span>🔧</span>Automações</button>
+        <button class="qcard" data-act="cfg"><span>⚙️</span>Ajustes</button>
+      </div>
+    </section>
 
-  <div class="rail">
-    <button class="chip" data-t="Escreva uma música sobre ">🎵 Música</button>
-    <button class="chip" data-t="Faça uma paródia de ">😂 Paródia</button>
-    <button class="chip" data-t="Escreva um roteiro curto sobre ">🎬 Roteiro</button>
-    <button class="chip" data-t="Resuma isto em tópicos: ">📝 Resumo</button>
-    <button class="chip" data-t="Escreva um poema sobre ">✍️ Poema</button>
-    <button class="chip" data-t="Conte uma piada sobre ">🤣 Piada</button>
-    <button class="chip" data-t="Me explique de forma simples: ">💡 Explicar</button>
-  </div>
+    <!-- ABA MONITORAMENTO (N8N) -->
+    <section class="view" id="view-monitor">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Automações &amp; N8N</div>
+          <div class="panel-sub">Tarefas, agentes e processos inteligentes</div>
+        </div>
+        <button class="mini-btn" id="btnNewFlow">+ Novo</button>
+      </div>
+      <div class="stat-row" id="n8nStats">
+        <div class="stat"><div class="stat-n" id="stFlows">—</div><div class="stat-l">Fluxos</div></div>
+        <div class="stat"><div class="stat-n" id="stActive">—</div><div class="stat-l">Ativos</div></div>
+        <div class="stat"><div class="stat-n" id="stRuns">—</div><div class="stat-l">Execuções</div></div>
+      </div>
+      <div class="n8n-empty" id="n8nEmpty">
+        <div class="n8n-empty-icon">🔌</div>
+        <div class="n8n-empty-t">Nenhuma automação conectada ainda</div>
+        <div class="n8n-empty-p">Quando você ligar o N8N, seus robôs aparecem aqui — ligar, desligar e acompanhar as execuções em tempo real.</div>
+        <button class="btn primary" id="btnLearnN8n" style="max-width:220px;margin:6px auto 0">Como funciona?</button>
+      </div>
+    </section>
 
-  <div class="composer">
-    <div class="field">
-      <textarea id="input" rows="1" placeholder="Pergunte qualquer coisa…" enterkeyhint="send"></textarea>
-      <button class="send" id="send" disabled aria-label="Enviar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-      </button>
-    </div>
-    <div class="hint" id="hint">
-      <button id="btnApps">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-        abrir apps do celular
-      </button>
-    </div>
-  </div>
+    <!-- ABA CONVERSAS -->
+    <section class="view on" id="view-conversas">
+      <main class="stream" id="stream" aria-live="polite"></main>
+      <div class="rail">
+        <button class="chip" data-t="Escreva uma música sobre ">🎵 Música</button>
+        <button class="chip" data-t="Faça uma paródia de ">😂 Paródia</button>
+        <button class="chip" data-t="Escreva um roteiro curto sobre ">🎬 Roteiro</button>
+        <button class="chip" data-t="Resuma isto em tópicos: ">📝 Resumo</button>
+        <button class="chip" data-t="Escreva um poema sobre ">✍️ Poema</button>
+        <button class="chip" data-t="Conte uma piada sobre ">🤣 Piada</button>
+        <button class="chip" data-t="Me explique de forma simples: ">💡 Explicar</button>
+      </div>
+      <div class="composer">
+        <div class="field">
+          <textarea id="input" rows="1" placeholder="Pergunte qualquer coisa…" enterkeyhint="send"></textarea>
+          <button class="mic-btn" id="btnMic" aria-label="Falar" title="Ditar por voz">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM6 11a6 6 0 0 0 12 0M12 18v3"/></svg>
+          </button>
+          <button class="send" id="send" disabled aria-label="Enviar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="hint" id="hint">
+          <button id="btnApps">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            abrir apps do celular
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button class="tabbtn" data-tab="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+      <span>Início</span>
+    </button>
+    <button class="tabbtn" data-tab="monitor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+      <span>Automações</span>
+    </button>
+    <button class="tabbtn on" data-tab="conversas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Conversas</span>
+    </button>
+  </nav>
 </div>
 
 <div class="veil" id="veil"></div>
@@ -366,6 +508,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
   <h2>Ajustes</h2>
   <div class="tabs" id="cfgTabs">
     <button class="tab on" data-p="ia">IA</button>
+    <button class="tab" data-p="visual">Visual</button>
     <button class="tab" data-p="voz">Voz</button>
     <button class="tab" data-p="fundo">Fundo</button>
     <button class="tab" data-p="dados">Dados</button>
@@ -385,6 +528,14 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
     <textarea class="box" id="cCustom" placeholder="Ex.: responda curto, evite emoji, sempre dê um exemplo prático."></textarea>
     <div class="row"><button class="btn primary" id="btnSaveIA">Salvar</button></div>
     <div class="note" id="noteIA"></div>
+  </div>
+
+  <div class="pane" id="p-visual">
+    <label class="lbl">Mascote</label>
+    <div class="mascots" id="mascotPicker"></div>
+    <label class="lbl">Cor de destaque</label>
+    <div class="accents" id="accentPicker"></div>
+    <div class="note" id="noteVisual"></div>
   </div>
 
   <div class="pane" id="p-voz">
@@ -475,9 +626,20 @@ const PERSONAS={
   cientista:{n:'Cientista',p:'Fale com precisão técnica: cite mecanismos, números e o que ainda é incerto.'},
   coach:{n:'Coach',p:'Seja motivador e prático: transforme qualquer coisa em próximos passos concretos.'}
 };
-const DEF={name:'',email:'',persona:'padrao',custom:'',about:'',sky:'cosmos',skyImg:'',dim:70,speak:false,voice:'',rate:1,pitch:1,brain:'auto',tam:2};
+const DEF={name:'',email:'',persona:'padrao',custom:'',about:'',sky:'cosmos',skyImg:'',dim:70,speak:false,voice:'',rate:1,pitch:1,brain:'auto',tam:2,mascot:'robo',accent:'signal'};
 let cfg={...DEF}, history=[], busy=false, voices=[];
 let convos=[], curId=null;  /* lista lateral e conversa aberta */
+let tab='conversas';  /* aba ativa: dashboard | monitor | conversas */
+
+/* ---------- mascotes (desenhos em SVG, trocáveis) ---------- */
+const MASCOTS={
+  robo:{n:'Robô',svg:`<svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C93FF"/><stop offset="1" stop-color="#4B6BFF"/></linearGradient></defs><ellipse cx="60" cy="108" rx="30" ry="6" fill="#7C93FF" opacity=".15"/><rect x="40" y="18" width="40" height="12" rx="6" fill="url(#mg)"/><circle cx="60" cy="14" r="4" fill="#8FE0FF"/><rect x="30" y="30" width="60" height="50" rx="18" fill="url(#mg)"/><rect x="37" y="40" width="46" height="26" rx="13" fill="#0A0E24"/><circle cx="50" cy="53" r="6" fill="#8FE0FF"><animate attributeName="r" values="6;2;6" dur="4s" repeatCount="indefinite"/></circle><circle cx="70" cy="53" r="6" fill="#8FE0FF"><animate attributeName="r" values="6;2;6" dur="4s" repeatCount="indefinite"/></circle><rect x="34" y="82" width="52" height="24" rx="12" fill="url(#mg)" opacity=".85"/><rect x="24" y="60" width="8" height="20" rx="4" fill="url(#mg)"/><rect x="88" y="60" width="8" height="20" rx="4" fill="url(#mg)"/></svg>`},
+  onca:{n:'Onça',svg:`<svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F5B450"/><stop offset="1" stop-color="#E0872F"/></linearGradient></defs><ellipse cx="60" cy="108" rx="28" ry="6" fill="#F5B450" opacity=".15"/><path d="M32 40 L26 22 L44 32 Z" fill="url(#cg)"/><path d="M88 40 L94 22 L76 32 Z" fill="url(#cg)"/><ellipse cx="60" cy="62" rx="34" ry="32" fill="url(#cg)"/><circle cx="46" cy="30" r="5" fill="url(#cg)"/><circle cx="74" cy="30" r="5" fill="url(#cg)"/><ellipse cx="48" cy="56" rx="6" ry="8" fill="#0A0E24"/><ellipse cx="72" cy="56" rx="6" ry="8" fill="#0A0E24"/><circle cx="49" cy="54" r="2" fill="#fff"/><circle cx="73" cy="54" r="2" fill="#fff"/><path d="M54 72 Q60 78 66 72" stroke="#0A0E24" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="60" cy="70" r="4" fill="#0A0E24"/><circle cx="40" cy="48" r="3" fill="#0A0E24" opacity=".5"/><circle cx="80" cy="48" r="3" fill="#0A0E24" opacity=".5"/><circle cx="38" cy="70" r="3" fill="#0A0E24" opacity=".5"/><circle cx="82" cy="70" r="3" fill="#0A0E24" opacity=".5"/></svg>`},
+  coruja:{n:'Coruja',svg:`<svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="og" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#A98BFF"/><stop offset="1" stop-color="#6E4BFF"/></linearGradient></defs><ellipse cx="60" cy="108" rx="26" ry="6" fill="#A98BFF" opacity=".15"/><path d="M34 34 L30 20 L46 30 Z" fill="url(#og)"/><path d="M86 34 L90 20 L74 30 Z" fill="url(#og)"/><ellipse cx="60" cy="64" rx="32" ry="36" fill="url(#og)"/><circle cx="48" cy="52" r="13" fill="#0A0E24"/><circle cx="72" cy="52" r="13" fill="#0A0E24"/><circle cx="48" cy="52" r="7" fill="#8FE0FF"><animate attributeName="r" values="7;3;7" dur="5s" repeatCount="indefinite"/></circle><circle cx="72" cy="52" r="7" fill="#8FE0FF"><animate attributeName="r" values="7;3;7" dur="5s" repeatCount="indefinite"/></circle><path d="M56 62 L60 70 L64 62 Z" fill="#F5B450"/><path d="M44 88 Q60 96 76 88" stroke="#0A0E24" stroke-width="3" fill="none" opacity=".4"/></svg>`},
+  humano:{n:'Humano',svg:`<svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7C93FF"/><stop offset="1" stop-color="#B98BFF"/></linearGradient></defs><ellipse cx="60" cy="108" rx="30" ry="6" fill="#7C93FF" opacity=".15"/><path d="M30 106 Q30 78 60 78 Q90 78 90 106 Z" fill="url(#hg)"/><circle cx="60" cy="48" r="26" fill="url(#hg)"/><path d="M34 42 Q40 20 60 20 Q80 20 86 42 Q86 30 60 28 Q34 30 34 42Z" fill="#0A0E24" opacity=".55"/><circle cx="50" cy="48" r="3.5" fill="#0A0E24"/><circle cx="70" cy="48" r="3.5" fill="#0A0E24"/><path d="M52 60 Q60 66 68 60" stroke="#0A0E24" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`},
+  cristal:{n:'Cristal',svg:`<svg viewBox="0 0 120 120" fill="none"><defs><linearGradient id="xg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8FE0FF"/><stop offset="1" stop-color="#7C93FF"/></linearGradient></defs><ellipse cx="60" cy="108" rx="24" ry="6" fill="#8FE0FF" opacity=".2"/><path d="M60 20 L86 54 L60 100 L34 54 Z" fill="url(#xg)" opacity=".9"><animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="24s" repeatCount="indefinite"/></path><path d="M60 20 L60 100 M34 54 L86 54" stroke="#0A0E24" stroke-width="2" opacity=".3"><animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" dur="24s" repeatCount="indefinite"/></path><circle cx="60" cy="58" r="7" fill="#fff" opacity=".8"/></svg>`}
+};
+const ACCENTS={signal:'#7C93FF',brass:'#E8B04B',verde:'#48D19B',rosa:'#FF6FB0',roxo:'#A98BFF'};
 
 const $=id=>document.getElementById(id);
 const jget=(k,f)=>{try{const v=localStorage.getItem(k);return v===null?f:JSON.parse(v)}catch(e){return f}};
@@ -866,6 +1028,23 @@ function paintTams(){
   });
 }
 function paintWalls(){Array.prototype.forEach.call(document.querySelectorAll('.wall'),w=>w.classList.toggle('on',w.dataset.w===cfg.sky))}
+function paintMascots(){
+  const box=$('mascotPicker');if(!box)return;box.innerHTML='';
+  Object.keys(MASCOTS).forEach(k=>{
+    const b=document.createElement('button');
+    b.className='mascot-o'+(cfg.mascot===k?' on':'');b.innerHTML=MASCOTS[k].svg;b.title=MASCOTS[k].n;
+    b.onclick=()=>{cfg.mascot=k;paintMascots();if(tab==='dashboard')paintHero();saveCfg();note('noteVisual','Mascote trocado.',1)};
+    box.append(b);
+  });
+  const ac=$('accentPicker');if(ac){ac.innerHTML='';
+    Object.keys(ACCENTS).forEach(k=>{
+      const b=document.createElement('button');
+      b.className='accent-o'+(cfg.accent===k?' on':'');b.style.background=ACCENTS[k];
+      b.onclick=()=>{cfg.accent=k;applyAccent();paintMascots();if(tab==='dashboard')paintHero();saveCfg();note('noteVisual','Cor trocada.',1)};
+      ac.append(b);
+    });
+  }
+}
 Array.prototype.forEach.call(document.querySelectorAll('.wall'),w=>w.addEventListener('click',()=>{
   if(w.dataset.w==='foto'&&!cfg.skyImg){note('noteFundo','Escolha uma imagem no campo abaixo.');$('fFile').click();return}
   cfg.sky=w.dataset.w;paintWalls();paintSky();saveCfg();note('noteFundo','Fundo aplicado.',1);
@@ -1058,7 +1237,7 @@ function paintAvatar(){
   $('tagline').textContent=cfg.name?'para '+cfg.name.split(' ')[0].toLowerCase():'assistente de bolso';
 }
 function fillCfg(){
-  paintPersonas();paintBrains();paintTams();paintWalls();paintConta();
+  paintPersonas();paintBrains();paintTams();paintWalls();paintConta();paintMascots();
   $('cName').value=cfg.name;$('cCustom').value=cfg.custom;$('dAbout').value=cfg.about;
   $('tSpeak').classList.toggle('on',cfg.speak);$('tSpeak').setAttribute('aria-checked',String(cfg.speak));
   $('vRate').value=cfg.rate;$('vRateN').textContent=cfg.rate.toFixed(2)+'×';
@@ -1068,11 +1247,89 @@ function fillCfg(){
   ['noteIA','noteVoz','noteFundo','noteDados','noteConta'].forEach(i=>{$(i).textContent='';$(i).className='note'});
 }
 
-/* ---------- boot ---------- */
-const stored=jget(K.cfg,{});
+/* ---------- abas ---------- */
+function switchTab(t){
+  tab=t;
+  Array.prototype.forEach.call(document.querySelectorAll('.view'),v=>v.classList.toggle('on',v.id==='view-'+t));
+  Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.classList.toggle('on',b.dataset.tab===t));
+  if(t==='dashboard'){paintHero();paintDevice()}
+  if(t==='monitor'){/* camada 2 liga o N8N aqui */}
+}
+Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+Array.prototype.forEach.call(document.querySelectorAll('.qcard'),q=>q.addEventListener('click',()=>{
+  if(q.dataset.go)switchTab(q.dataset.go);
+  if(q.dataset.act==='cfg'){fillCfg();openSheet('sheetCfg')}
+}));
+$('btnLearnN8n')&&$('btnLearnN8n').addEventListener('click',()=>{
+  switchTab('conversas');
+  $('input').value='Me explica de forma simples o que é o N8N e como ele pode me ajudar.';grow();toggle();$('input').focus();
+});
+$('btnNewFlow')&&$('btnNewFlow').addEventListener('click',()=>{
+  alert('Em breve: criar automações descrevendo o que você quer. Por enquanto, conecte seu N8N para ver seus fluxos aqui.');
+});
+
+/* ---------- mascote + accent ---------- */
+function applyAccent(){
+  const c=ACCENTS[cfg.accent]||ACCENTS.signal;
+  document.documentElement.style.setProperty('--accent',c);
+}
+function paintHero(){
+  const m=MASCOTS[cfg.mascot]||MASCOTS.robo;
+  $('heroMascot').innerHTML=m.svg;
+  $('heroName').textContent=cfg.name?('ATLAS, seu parceiro'):'ATLAS IA';
+  if(cfg.name)$('heroName').textContent='ATLAS';
+}
+
+/* ---------- cartões reais do aparelho ---------- */
+function paintDevice(){
+  const box=$('deviceCards');if(!box)return;
+  const cards=[];
+  // bateria (real, quando o navegador deixa)
+  cards.push({l:'Bateria',id:'cBat',v:'…',x:'carregando'});
+  cards.push({l:'Conexão',id:'cNet',v:navigator.onLine?'Online':'Offline',x:conType()});
+  cards.push({l:'Memória',id:'cMem',v:(navigator.deviceMemory?navigator.deviceMemory+' GB':'—'),x:'aproximada'});
+  cards.push({l:'Tela',id:'cScr',v:(screen.width+'×'+screen.height),x:(window.devicePixelRatio||1)+'x'});
+  box.innerHTML=cards.map(c=>`<div class="card"><div class="card-l">${c.l}</div><div class="card-v" id="${c.id}">${c.v}</div><div class="card-x">${c.x}</div></div>`).join('');
+  // bateria via API
+  if(navigator.getBattery){
+    navigator.getBattery().then(b=>{
+      const set=()=>{const e=$('cBat');if(e){e.textContent=Math.round(b.level*100)+'%';e.nextElementSibling.textContent=b.charging?'carregando':'na bateria'}};
+      set();b.addEventListener('levelchange',set);b.addEventListener('chargingchange',set);
+    }).catch(()=>{const e=$('cBat');if(e){e.textContent='—';e.nextElementSibling.textContent='indisponível'}});
+  }else{const e=$('cBat');if(e){e.textContent='—';e.nextElementSibling.textContent='indisponível'}}
+}
+function conType(){
+  const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+  if(!c)return navigator.onLine?'conectado':'sem rede';
+  return (c.effectiveType||'').toUpperCase()||'conectado';
+}
+window.addEventListener('online',()=>{if(tab==='dashboard')paintDevice()});
+window.addEventListener('offline',()=>{if(tab==='dashboard')paintDevice()});
+
+/* ---------- ditado por voz (fala -> texto) ---------- */
+let recog=null,recording=false;
+(function initRecog(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){$('btnMic')&&($('btnMic').style.display='none');return}
+  recog=new SR();recog.lang='pt-BR';recog.interimResults=true;recog.continuous=false;
+  let base='';
+  recog.onresult=e=>{
+    let txt='';for(let i=0;i<e.results.length;i++)txt+=e.results[i][0].transcript;
+    $('input').value=(base?base+' ':'')+txt;grow();toggle();
+  };
+  recog.onend=()=>{recording=false;$('btnMic').classList.remove('on')};
+  recog.onerror=()=>{recording=false;$('btnMic').classList.remove('on')};
+  $('btnMic').addEventListener('click',()=>{
+    if(recording){recog.stop();return}
+    base=$('input').value.trim();
+    try{recog.start();recording=true;$('btnMic').classList.add('on')}catch(e){}
+  });
+})();
 Object.keys(DEF).forEach(k=>{cfg[k]=(stored&&stored[k]!==undefined)?stored[k]:DEF[k]});
 cfg.skyImg=jget(K.skyimg,'');
+applyAccent();
 paintSky();paintAvatar();paintStatus();paintConta();greet();grow();toggle();
+switchTab('conversas');
 
 (async function boot(){
   if(TOKEN){
