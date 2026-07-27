@@ -300,6 +300,20 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 .flow-run svg{width:12px;height:12px}
 .flow-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .flow-hash{font-family:var(--mono);font-size:9.5px;color:var(--dim);opacity:.7}
+.flow-load{padding:26px 18px;text-align:center;color:var(--dim);font-size:13px;line-height:1.6;
+  border:1px dashed var(--line-2);border-radius:16px;background:rgba(17,23,55,.35)}
+.flow-diag{font-size:12px;color:var(--dim);border:1px solid var(--line);border-radius:9px;padding:7px 11px;transition:.15s}
+.flow-diag:hover{color:var(--accent,#7C93FF);border-color:var(--accent,#7C93FF)}
+.flow-diagbox{margin-top:11px;padding:12px;border-radius:12px;border:1px solid var(--line);
+  background:rgba(10,14,36,.5);font-size:12.5px;line-height:1.6;color:var(--paper)}
+.flow-diagbox b{color:var(--brass)}
+.diag-go,.diag-open{display:inline-block;margin-top:8px;color:var(--accent,#7C93FF);font-size:12px;font-weight:600;background:none;border:0;cursor:pointer}
+.diag-load,.diag-err{color:var(--dim)}.diag-err{color:var(--danger)}
+.tmpls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.tmpl{display:flex;align-items:center;gap:9px;padding:12px;border-radius:13px;border:1px solid var(--line);
+  background:rgba(17,23,55,.5);font-size:13px;font-weight:500;color:var(--paper);text-align:left;transition:.15s}
+.tmpl span{font-size:19px}
+.tmpl.on{border-color:var(--accent,#7C93FF);background:rgba(124,147,255,.14)}
 
 /* conversa ocupa a aba inteira */
 #view-conversas{padding:0}
@@ -530,12 +544,14 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
 <section class="sheet" id="sheetFlow" role="dialog" aria-label="Nova automação">
   <div class="grab"></div>
   <h2>Nova automação</h2>
-  <p>Descreva em português o que você quer que aconteça sozinho. A IA monta o fluxo no seu N8N pra você.</p>
-  <label class="lbl" for="flowDesc">O que a automação deve fazer?</label>
-  <textarea class="box" id="flowDesc" style="min-height:110px" placeholder="Ex.: Todo dia às 8h, pegar a cotação do dólar e me mandar. Ou: quando chegar um formulário novo, salvar numa planilha."></textarea>
+  <p>Escolha um modelo pronto e só edite, ou descreva do seu jeito.</p>
+  <label class="lbl">Modelos prontos</label>
+  <div class="tmpls" id="tmpls"></div>
+  <label class="lbl" for="flowDesc">Ou descreva o que quer</label>
+  <textarea class="box" id="flowDesc" style="min-height:96px" placeholder="Ex.: Todo dia às 8h, me mandar a cotação do dólar."></textarea>
   <div class="row"><button class="btn primary" id="btnMakeFlow">Criar com a IA</button></div>
   <div class="note" id="noteFlow"></div>
-  <p style="font-size:11.5px;margin-top:14px;color:var(--dim)">A automação é criada <b style="color:var(--dim);font-family:var(--body);font-weight:600">desligada</b>, pra você revisar antes de ligar. Conectar serviços externos (WhatsApp, e-mail) pode precisar de login dentro do N8N.</p>
+  <p style="font-size:11.5px;margin-top:14px;color:var(--dim)">Criada <b style="color:var(--dim);font-family:var(--body);font-weight:600">desligada</b> pra você revisar. Enviar de verdade (WhatsApp, e-mail) pede conectar sua conta dentro do N8N — a IA te mostra onde.</p>
 </section>
 
 <section class="sheet" id="sheetApps" role="dialog" aria-label="Apps do celular">
@@ -1343,7 +1359,7 @@ function switchTab(t){
   Array.prototype.forEach.call(document.querySelectorAll('.view'),v=>v.classList.toggle('on',v.id==='view-'+t));
   Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.classList.toggle('on',b.dataset.tab===t));
   if(t==='dashboard'){paintHero();paintDevice()}
-  if(t==='monitor'){paintFlows();loadN8n()}
+  if(t==='monitor'){loadN8n()}
 }
 Array.prototype.forEach.call(document.querySelectorAll('.tabbtn'),b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 Array.prototype.forEach.call(document.querySelectorAll('.qcard'),q=>q.addEventListener('click',()=>{
@@ -1354,7 +1370,25 @@ $('btnLearnN8n')&&$('btnLearnN8n').addEventListener('click',()=>{
   switchTab('conversas');
   $('input').value='Me explica de forma simples o que é o N8N e como ele pode me ajudar.';grow();toggle();$('input').focus();
 });
-$('btnNewFlow')&&$('btnNewFlow').addEventListener('click',()=>openSheet('sheetFlow'));
+$('btnNewFlow')&&$('btnNewFlow').addEventListener('click',()=>{paintTmpls();openSheet('sheetFlow')});
+const FLOW_TMPLS=[
+  {i:'⏰',t:'Lembrete diário',d:'Todo dia às 8h da manhã, criar um lembrete com a mensagem "Bom dia! Não esqueça das tarefas de hoje".'},
+  {i:'🌤️',t:'Clima do dia',d:'Todo dia às 7h, buscar a previsão do tempo da minha cidade numa API pública e preparar um resumo.'},
+  {i:'💵',t:'Cotação do dólar',d:'Todo dia às 9h, buscar a cotação atual do dólar numa API pública e preparar uma mensagem com o valor.'},
+  {i:'📨',t:'Webhook → ação',d:'Quando chegar uma chamada num webhook, pegar os dados recebidos e organizar num resumo.'},
+  {i:'🔁',t:'A cada hora',d:'A cada 1 hora, disparar uma verificação e registrar o resultado.'},
+  {i:'📝',t:'Do meu jeito',d:''},
+];
+function paintTmpls(){
+  const box=$('tmpls');if(!box)return;box.innerHTML='';
+  FLOW_TMPLS.forEach(m=>{
+    const b=document.createElement('button');b.className='tmpl';
+    b.innerHTML='<span>'+m.i+'</span>'+m.t;
+    b.onclick=()=>{$('flowDesc').value=m.d;$('flowDesc').focus();
+      Array.prototype.forEach.call(box.children,c=>c.classList.remove('on'));b.classList.add('on')};
+    box.append(b);
+  });
+}
 $('btnMakeFlow')&&$('btnMakeFlow').addEventListener('click',async()=>{
   const desc=$('flowDesc').value.trim();
   if(!desc){note('noteFlow','Descreva o que você quer.');return}
@@ -1432,26 +1466,32 @@ function paintDevice(){
 let n8nConnected=false;
 async function loadN8n(){
   if(!TOKEN)return;
+  const box=$('flowList');
+  if(box)box.innerHTML='<div class="flow-load">Carregando suas automações…</div>';
   try{
     const st=await apiCall('/n8n/status');
     n8nConnected=!!st.connected;
+    const pv=document.querySelector('.preview-banner');
     if(st.connected){
       $('niHost').textContent='conectado';
       $('niRun').textContent=(st.active||0)+' / '+(st.total||0);
       $('niRuns').textContent=(st.runs||0)+' runs';
-      const pv=document.querySelector('.preview-banner');if(pv)pv.style.display='none';
+      if(pv)pv.style.display='none';
       const wf=await apiCall('/n8n/workflows');
       paintRealFlows(wf.workflows||[]);
     }else{
       $('niHost').textContent='não conectado';
-      const pv=document.querySelector('.preview-banner');if(pv)pv.style.display='';
-      paintFlows(); // demo
+      if(pv)pv.style.display='';
+      paintFlows(); // exemplos só quando NÃO conectado
     }
-  }catch(e){paintFlows()}
+  }catch(e){
+    const pv=document.querySelector('.preview-banner');if(pv)pv.style.display='';
+    paintFlows();
+  }
 }
 function paintRealFlows(list){
   const box=$('flowList');if(!box)return;
-  if(!list.length){box.innerHTML='<div class="preview-banner" style="display:block">Nenhum fluxo ainda. Toque em “+ Novo processo” e descreva o que quer que a IA monta pra você.</div>';return}
+  if(!list.length){box.innerHTML='<div class="flow-load">Nenhuma automação ainda. Toque em “+ Novo processo” e escolha um modelo ou descreva o que quer.</div>';return}
   box.innerHTML='';
   list.forEach(f=>{
     const el=document.createElement('div');el.className='flow';
@@ -1460,19 +1500,36 @@ function paintRealFlows(list){
         <span class="flow-name">${(f.name||'Fluxo').replace(/</g,'&lt;')}</span>
         <span class="flow-status ${f.active?'act':'pau'}"><i></i>${f.active?'Ativo':'Pausado'}</span>
       </div>
-      <div class="flow-desc">${f.nodes} passo(s) · atualizado recentemente</div>
+      <div class="flow-desc">${f.nodes} passo(s) no fluxo</div>
       <div class="flow-foot">
-        <span class="flow-stat">Passos <b>${f.nodes}</b></span>
+        <button class="flow-diag" data-id="${f.id}">🔍 Diagnosticar</button>
         <button class="flow-run" data-id="${f.id}" data-act="${f.active?'deactivate':'activate'}">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="${f.active?'M6 5h4v14H6zM14 5h4v14h-4z':'M8 5v14l11-7z'}"/></svg>${f.active?'Desligar':'Ligar'}</button>
-      </div>`;
+      </div>
+      <div class="flow-diagbox" style="display:none"></div>`;
     el.querySelector('.flow-run').onclick=async(ev)=>{
-      const b=ev.currentTarget;b.textContent='…';
+      const b=ev.currentTarget;const old=b.innerHTML;b.textContent='…';
       try{await apiCall('/n8n/workflows/'+b.dataset.id+'/'+b.dataset.act,{method:'POST'});loadN8n()}
-      catch(e){alert(e.message);loadN8n()}
+      catch(e){
+        b.innerHTML=old;
+        const dbox=el.querySelector('.flow-diagbox');
+        dbox.style.display='block';dbox.innerHTML='<b>Não liguei:</b> '+e.message+' <button class="diag-go" data-id="'+b.dataset.id+'">Ver o que falta →</button>';
+        dbox.querySelector('.diag-go').onclick=()=>diagnose(b.dataset.id,dbox);
+      }
+    };
+    el.querySelector('.flow-diag').onclick=()=>{
+      const dbox=el.querySelector('.flow-diagbox');dbox.style.display='block';diagnose(f.id,dbox);
     };
     box.append(el);
   });
+}
+async function diagnose(id,dbox){
+  dbox.style.display='block';dbox.innerHTML='<span class="diag-load">🔍 A IA está olhando o fluxo…</span>';
+  try{
+    const d=await apiCall('/n8n/workflows/'+id+'/diagnose');
+    dbox.innerHTML='<div class="diag-txt">'+fmt(d.report||'Sem diagnóstico.')+'</div>'+
+      '<a class="diag-open" href="'+d.open+'" target="_blank" rel="noopener">Abrir no N8N para ajustar →</a>';
+  }catch(e){dbox.innerHTML='<span class="diag-err">'+e.message+'</span>'}
 }
 /* ---------- cartões de exemplo (quando N8N não conectado) ---------- */
 const DEMO_FLOWS=[
