@@ -460,10 +460,11 @@ const N8N_SYSTEM = `Você gera workflows do n8n em JSON válido. Regras:
 - Responda APENAS com o JSON do workflow, sem texto, sem markdown, sem crases.
 - Estrutura: {"name":"...","nodes":[...],"connections":{...},"settings":{}}.
 - Cada node tem: "parameters"(objeto), "name"(único), "type", "typeVersion"(número), "position"([x,y]).
-- Sempre comece com UM node de gatilho. Se for tarefa agendada use "n8n-nodes-base.scheduleTrigger". Se reagir a chamada externa use "n8n-nodes-base.webhook". Se não souber, use "n8n-nodes-base.manualTrigger".
-- Para lógica/HTTP use "n8n-nodes-base.httpRequest" ou "n8n-nodes-base.set" ou "n8n-nodes-base.if".
-- "connections" liga os nodes pelo NOME: {"NomeDoNode":{"main":[[{"node":"ProximoNode","type":"main","index":0}]]}}.
-- Mantenha simples e válido. Não invente credenciais.`;
+- REGRA DO GATILHO: se a tarefa é recorrente ("todo dia", "a cada hora", "às 8h") use SEMPRE "n8n-nodes-base.scheduleTrigger" com parameters apropriados — isso permite LIGAR o fluxo. Se reage a chamada externa, use "n8n-nodes-base.webhook". Só use "manualTrigger" se for realmente sob demanda.
+- Depois do gatilho, adicione ao menos um node de ação, geralmente "n8n-nodes-base.set" (montar a mensagem) ou "n8n-nodes-base.httpRequest" (buscar dado de uma API pública).
+- "connections" liga os nodes pelo NOME: {"NomeDoGatilho":{"main":[[{"node":"NomeDaAcao","type":"main","index":0}]]}}.
+- Não invente credenciais nem use nodes que exijam login (Gmail, WhatsApp). Se pedirem envio, monte até o passo anterior e nomeie o último node "Conectar conta aqui".
+- Mantenha simples, válido e LIGÁVEL.`;
 
 function uuid() { return crypto.randomUUID(); }
 
@@ -514,6 +515,45 @@ app.post('/api/n8n/create', auth, async (req, res) => {
     res.json({ ok: true, id: cr.data?.id, name: payload.name, nodes: payload.nodes.length,
       open: N8N_URL + '/workflow/' + (cr.data?.id || '') });
   } catch (e) { res.status(502).json({ error: 'N8N fora do ar ao criar.' }); }
+});
+
+/* ---------- IA diagnostica um fluxo (lê e explica o problema) ---------- */
+app.get('/api/n8n/workflows/:id/diagnose', auth, async (req, res) => {
+  if (!n8nOn()) return res.status(503).json({ error: 'N8N não conectado.' });
+  try {
+    const wf = await n8nCall('/workflows/' + req.params.id);
+    if (!wf.ok) return res.status(400).json({ error: 'Não achei esse fluxo.' });
+    const w = wf.data || {};
+    const nodes = w.nodes || [];
+    const triggers = nodes.filter(n => /trigger|webhook|cron|schedule/i.test(n.type || ''));
+    const manual = nodes.some(n => /manualTrigger/i.test(n.type || ''));
+    const activatable = triggers.some(n => !/manualTrigger/i.test(n.type || ''));
+
+    // resumo técnico pra IA explicar
+    const resumo = nodes.map(n => '- ' + (n.name || '?') + ' (' + (n.type || '?').replace('n8n-nodes-base.', '') + ')').join('\n') || '(vazio)';
+    let report = '';
+    if (GEMINI_API_KEY) {
+      try {
+        const gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: 'Você é o ATLAS. Explique em português simples, em até 4 frases, o estado de um fluxo do n8n e o que falta para funcionar/ligar. Seja prático e gentil. Não use jargão técnico. Se faltar gatilho automático (schedule/webhook), diga que ele só roda no botão Executar. Se algum passo pedir conta/login, avise que precisa conectar a conta no n8n.' }] },
+            contents: [{ role: 'user', parts: [{ text: `Fluxo "${w.name}". Ativo: ${w.active}. Passos:\n${resumo}\n\nTem gatilho automático? ${activatable ? 'sim' : 'não'}. Tem gatilho manual? ${manual ? 'sim' : 'não'}.` }] }],
+            generationConfig: { temperature: 0.4, maxOutputTokens: 500 }
+          })
+        });
+        const gd = await gr.json();
+        report = (gd?.candidates?.[0]?.content?.parts || []).map(p => p.text).join('').trim();
+      } catch {}
+    }
+    if (!report) {
+      report = nodes.length === 0
+        ? 'Esse fluxo está **vazio** — não tem nenhum passo. Adicione um começo (gatilho) e uma ação para ele funcionar.'
+        : activatable ? 'O fluxo tem um gatilho automático e pode ser ligado. Se não liga, algum passo pode estar pedindo uma conta conectada.'
+        : 'Esse fluxo só tem começo manual, então roda no botão **Executar** — ele não fica "ligado" sozinho. Para ligar automático, precisa de um gatilho de agendamento ou webhook.';
+    }
+    res.json({ report, activatable, empty: nodes.length === 0, open: N8N_URL + '/workflow/' + req.params.id });
+  } catch (e) { res.status(502).json({ error: 'N8N fora do ar.' }); }
 });
 
 app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v4-n8n', n8n: n8nOn(), email: !!mailer }));
