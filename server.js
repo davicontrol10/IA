@@ -24,6 +24,13 @@ const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const MAIL_FROM = process.env.MAIL_FROM || SMTP_USER;
 
+// N8N (automações). Endereço e chave do SEU n8n — ficam só no servidor.
+const N8N_URL = (process.env.N8N_URL || '').replace(/\/+$/, '');
+const N8N_KEY = process.env.N8N_KEY || '';
+const n8nOn = () => !!(N8N_URL && N8N_KEY);
+if (n8nOn()) console.log('N8N ligado em ' + N8N_URL);
+else console.warn('AVISO: N8N não configurado (N8N_URL / N8N_KEY vazios) — a aba de automações fica em modo demonstração.');
+
 let mailer = null;
 if (SMTP_HOST && SMTP_USER) {
   mailer = nodemailer.createTransport({
@@ -401,7 +408,115 @@ app.delete('/api/account', auth, async (req, res) => {
   catch (e) { console.error(e); res.status(500).json({ error: 'Erro ao apagar.' }); }
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v3-conversas' }));
+/* ================= N8N (automações) ================= */
+async function n8nCall(path, opts = {}) {
+  const r = await fetch(N8N_URL + '/api/v1' + path, {
+    method: opts.method || 'GET',
+    headers: { 'X-N8N-API-KEY': N8N_KEY, 'Content-Type': 'application/json', accept: 'application/json' },
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  let data = null;
+  try { data = await r.json(); } catch {}
+  return { ok: r.ok, status: r.status, data };
+}
+
+app.get('/api/n8n/status', auth, async (req, res) => {
+  if (!n8nOn()) return res.json({ connected: false });
+  try {
+    const wf = await n8nCall('/workflows?limit=100');
+    if (!wf.ok) return res.json({ connected: false, error: 'A chave do N8N foi recusada.' });
+    const list = wf.data?.data || [];
+    let runs = 0;
+    try { const ex = await n8nCall('/executions?limit=1'); runs = ex.data?.data?.length ? (ex.data?.count || ex.data.data.length) : 0; } catch {}
+    res.json({ connected: true, total: list.length, active: list.filter(w => w.active).length, runs });
+  } catch (e) { res.json({ connected: false, error: 'N8N fora do ar.' }); }
+});
+
+app.get('/api/n8n/workflows', auth, async (req, res) => {
+  if (!n8nOn()) return res.status(503).json({ error: 'N8N não conectado.' });
+  try {
+    const wf = await n8nCall('/workflows?limit=100');
+    if (!wf.ok) return res.status(400).json({ error: 'Não consegui listar (chave/endereço do N8N).' });
+    const list = (wf.data?.data || []).map(w => ({
+      id: w.id, name: w.name, active: w.active,
+      nodes: (w.nodes || []).length, updatedAt: w.updatedAt
+    }));
+    res.json({ workflows: list });
+  } catch (e) { res.status(502).json({ error: 'N8N fora do ar.' }); }
+});
+
+app.post('/api/n8n/workflows/:id/:action', auth, async (req, res) => {
+  if (!n8nOn()) return res.status(503).json({ error: 'N8N não conectado.' });
+  const act = req.params.action === 'activate' ? 'activate' : 'deactivate';
+  try {
+    const r = await n8nCall('/workflows/' + req.params.id + '/' + act, { method: 'POST' });
+    if (!r.ok) return res.status(400).json({ error: 'Não consegui ' + (act === 'activate' ? 'ligar' : 'desligar') + '. Talvez o fluxo precise de um gatilho válido.' });
+    res.json({ ok: true, active: act === 'activate' });
+  } catch (e) { res.status(502).json({ error: 'N8N fora do ar.' }); }
+});
+
+/* ---------- a IA cria um fluxo a partir da descrição ---------- */
+const N8N_SYSTEM = `Você gera workflows do n8n em JSON válido. Regras:
+- Responda APENAS com o JSON do workflow, sem texto, sem markdown, sem crases.
+- Estrutura: {"name":"...","nodes":[...],"connections":{...},"settings":{}}.
+- Cada node tem: "parameters"(objeto), "name"(único), "type", "typeVersion"(número), "position"([x,y]).
+- Sempre comece com UM node de gatilho. Se for tarefa agendada use "n8n-nodes-base.scheduleTrigger". Se reagir a chamada externa use "n8n-nodes-base.webhook". Se não souber, use "n8n-nodes-base.manualTrigger".
+- Para lógica/HTTP use "n8n-nodes-base.httpRequest" ou "n8n-nodes-base.set" ou "n8n-nodes-base.if".
+- "connections" liga os nodes pelo NOME: {"NomeDoNode":{"main":[[{"node":"ProximoNode","type":"main","index":0}]]}}.
+- Mantenha simples e válido. Não invente credenciais.`;
+
+function uuid() { return crypto.randomUUID(); }
+
+app.post('/api/n8n/create', auth, async (req, res) => {
+  if (!n8nOn()) return res.status(503).json({ error: 'Conecte o N8N primeiro (o dono precisa configurar).' });
+  if (!GEMINI_API_KEY) return res.status(503).json({ error: 'IA sem chave configurada.' });
+  const desc = clean(req.body.description);
+  if (!desc) return res.status(400).json({ error: 'Descreva o que a automação deve fazer.' });
+
+  // 1) IA gera o JSON do fluxo
+  let text = '';
+  try {
+    const gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: N8N_SYSTEM }] },
+        contents: [{ role: 'user', parts: [{ text: 'Crie um workflow que: ' + desc }] }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 4096, responseMimeType: 'application/json' }
+      })
+    });
+    const gd = await gr.json();
+    text = (gd?.candidates?.[0]?.content?.parts || []).map(p => p.text).join('').trim();
+  } catch (e) { return res.status(502).json({ error: 'A IA não respondeu. Tente de novo.' }); }
+
+  // 2) valida e limpa o JSON
+  let wf;
+  try {
+    text = text.replace(/^```(json)?/i, '').replace(/```$/, '').trim();
+    wf = JSON.parse(text);
+  } catch (e) { return res.status(422).json({ error: 'A IA gerou algo inválido. Tente descrever de forma mais simples.' }); }
+  if (!wf || !Array.isArray(wf.nodes) || !wf.nodes.length)
+    return res.status(422).json({ error: 'A IA não montou o fluxo. Descreva com mais detalhe (gatilho + ação).' });
+
+  // garante campos obrigatórios
+  wf.nodes.forEach((n, i) => {
+    n.id = n.id || uuid();
+    n.typeVersion = n.typeVersion || 1;
+    n.parameters = n.parameters || {};
+    n.position = Array.isArray(n.position) ? n.position : [250 + i * 220, 300];
+    n.name = n.name || ('Node ' + (i + 1));
+  });
+  const payload = { name: (wf.name || desc).slice(0, 80), nodes: wf.nodes, connections: wf.connections || {}, settings: wf.settings || {} };
+
+  // 3) cria no n8n (desativado, pra revisão)
+  try {
+    const cr = await n8nCall('/workflows', { method: 'POST', body: payload });
+    if (!cr.ok) return res.status(400).json({ error: 'O N8N recusou o fluxo: ' + (cr.data?.message || cr.status) + '. Tente descrever de outro jeito.' });
+    res.json({ ok: true, id: cr.data?.id, name: payload.name, nodes: payload.nodes.length,
+      open: N8N_URL + '/workflow/' + (cr.data?.id || '') });
+  } catch (e) { res.status(502).json({ error: 'N8N fora do ar ao criar.' }); }
+});
+
+app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v4-n8n', n8n: n8nOn(), email: !!mailer }));
 
 initDb()
   .then(() => app.listen(PORT, () => console.log('ATLAS no ar na porta ' + PORT)))
