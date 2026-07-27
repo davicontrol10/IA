@@ -556,7 +556,53 @@ app.get('/api/n8n/workflows/:id/diagnose', auth, async (req, res) => {
   } catch (e) { res.status(502).json({ error: 'N8N fora do ar.' }); }
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v4-n8n', n8n: n8nOn(), email: !!mailer }));
+/* ---------- enviar e-mail de verdade (via Brevo) ---------- */
+const sendCounts = {};  // limite simples por usuário por dia
+app.post('/api/send-email', auth, async (req, res) => {
+  if (!mailer) return res.status(503).json({ error: 'O servidor ainda não tem e-mail configurado (SMTP). O dono precisa preencher no EasyPanel.' });
+  const to = clean(req.body.to).toLowerCase();
+  const subject = clean(req.body.subject).slice(0, 160) || '(sem assunto)';
+  const body = String(req.body.body || '').slice(0, 6000);
+  if (!validEmail(to)) return res.status(400).json({ error: 'O e-mail de quem vai receber está inválido.' });
+  if (!body.trim()) return res.status(400).json({ error: 'Escreva a mensagem antes de enviar.' });
+
+  const day = new Date().toISOString().slice(0, 10);
+  const key = req.userId + ':' + day;
+  sendCounts[key] = (sendCounts[key] || 0) + 1;
+  if (sendCounts[key] > 30) return res.status(429).json({ error: 'Você já enviou muitos e-mails hoje. Tente amanhã.' });
+
+  try {
+    const u = await pool.query('SELECT email,name FROM users WHERE id=$1', [req.userId]);
+    const nome = u.rows[0]?.name || 'ATLAS';
+    const replyTo = u.rows[0]?.email;
+    const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#222">${body.replace(/\n/g, '<br>')}<hr style="border:none;border-top:1px solid #eee;margin:20px 0"><div style="font-size:12px;color:#999">Enviado por ${nome} via ATLAS</div></div>`;
+    await mailer.sendMail({ from: `"${nome} (via ATLAS)" <${MAIL_FROM}>`, to, replyTo, subject, text: body, html });
+    res.json({ ok: true });
+  } catch (e) { console.error('send-email:', e.message); res.status(502).json({ error: 'Não consegui enviar agora. Tente de novo.' }); }
+});
+
+/* ---------- IA escreve o e-mail ---------- */
+app.post('/api/draft-email', auth, async (req, res) => {
+  if (!GEMINI_API_KEY) return res.status(503).json({ error: 'IA sem chave.' });
+  const pedido = clean(req.body.prompt);
+  if (!pedido) return res.status(400).json({ error: 'Diga sobre o que é o e-mail.' });
+  try {
+    const gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: 'Você escreve e-mails em português do Brasil, claros e educados. Responda em JSON: {"assunto":"...","corpo":"..."} e nada mais. O corpo deve ter saudação e despedida naturais.' }] },
+        contents: [{ role: 'user', parts: [{ text: pedido }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1200, responseMimeType: 'application/json' }
+      })
+    });
+    const gd = await gr.json();
+    let t = (gd?.candidates?.[0]?.content?.parts || []).map(p => p.text).join('').trim().replace(/^```(json)?/i, '').replace(/```$/, '');
+    const j = JSON.parse(t);
+    res.json({ subject: j.assunto || '', body: j.corpo || '' });
+  } catch (e) { res.status(502).json({ error: 'A IA não conseguiu escrever agora.' }); }
+});
+
+app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v5-email', n8n: n8nOn(), email: !!mailer }));
 
 initDb()
   .then(() => app.listen(PORT, () => console.log('ATLAS no ar na porta ' + PORT)))
