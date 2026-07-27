@@ -483,6 +483,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
     <section class="view on" id="view-conversas">
       <main class="stream" id="stream" aria-live="polite"></main>
       <div class="rail">
+        <button class="chip" id="chipMail">📧 Enviar e-mail</button>
         <button class="chip" data-t="Escreva uma música sobre ">🎵 Música</button>
         <button class="chip" data-t="Faça uma paródia de ">😂 Paródia</button>
         <button class="chip" data-t="Escreva um roteiro curto sobre ">🎬 Roteiro</button>
@@ -540,6 +541,25 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border:0;border-radiu
   <div class="convo-list" id="convoList"></div>
   <div class="drawer-foot" id="drawerFoot"></div>
 </aside>
+
+<section class="sheet" id="sheetMail" role="dialog" aria-label="Enviar e-mail">
+  <div class="grab"></div>
+  <h2>Enviar e-mail</h2>
+  <p>Escreva pra quem vai e a mensagem — ou peça pra IA escrever. Sai do e-mail do app; quem responder, responde pra você.</p>
+  <label class="lbl" for="mTo">Para quem vai (e-mail)</label>
+  <input type="email" id="mTo" placeholder="pai@email.com" autocapitalize="off">
+  <label class="lbl" for="mIdea">O que você quer dizer? (a IA escreve)</label>
+  <div style="display:flex;gap:8px">
+    <input type="text" id="mIdea" placeholder="Ex.: avisar meu pai que chego às 8h" style="flex:1">
+    <button class="btn ghost" id="btnDraft" style="flex:none;width:auto;padding:13px 16px">Escrever</button>
+  </div>
+  <label class="lbl" for="mSubject">Assunto</label>
+  <input type="text" id="mSubject" placeholder="Assunto do e-mail">
+  <label class="lbl" for="mBody">Mensagem</label>
+  <textarea class="box" id="mBody" style="min-height:120px" placeholder="Escreva aqui, ou use o botão Escrever acima."></textarea>
+  <div class="row"><button class="btn primary" id="btnSendMail">Enviar</button></div>
+  <div class="note" id="noteMail"></div>
+</section>
 
 <section class="sheet" id="sheetFlow" role="dialog" aria-label="Nova automação">
   <div class="grab"></div>
@@ -721,7 +741,7 @@ const BRAINS={
 };
 const TAMS=[{n:'Curta',v:1200},{n:'Média',v:4096},{n:'Longa',v:16384},{n:'Sem limite',v:65536}];
 const CAP={'gemini-2.0-flash':8192,'gemini-2.0-flash-lite':8192,'gemini-flash-latest':8192};
-const BASE='Você é o ATLAS, assistente pessoal que roda no celular do usuário. Responda sempre em português do Brasil. Quando pedirem música, poema, paródia ou roteiro, entregue a obra completa de cara, sem ficar pedindo detalhes antes de tentar.';
+const BASE='Você é o ATLAS, assistente pessoal e MENTOR do usuário, rodando no app dele. Responda sempre em português do Brasil, com paciência e clareza, como um professor particular que quer ver o usuário conseguir. Quando ele tiver uma dúvida ou um problema (inclusive sobre automações, N8N, e-mail, ou o próprio app), NÃO dê resposta curta e seca: explique o passo a passo, numerado, do jeito mais simples possível, como um tutorial, e no fim pergunte se ficou claro ou se ele quer que você detalhe algum passo. Se ele pedir para enviar um e-mail, oriente-o a usar o botão de e-mail do app. Quando pedirem música, poema, paródia ou roteiro, entregue a obra completa de cara, sem ficar pedindo detalhes antes.';
 const PERSONAS={
   padrao:{n:'Padrão',p:'Fale de forma clara, calorosa e direta, sem enrolação.'},
   amigo:{n:'Amigo',p:'Fale como um amigo próximo: informal, empolgado, com gíria leve. Pode brincar.'},
@@ -1082,7 +1102,33 @@ $('input').addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey&&window.matchMedia('(min-width:820px)').matches){e.preventDefault();submit()}});
 $('send').addEventListener('click',submit);
 Array.prototype.forEach.call(document.querySelectorAll('.chip'),c=>c.addEventListener('click',()=>{
+  if(!c.dataset.t)return;
   const i=$('input');i.value=c.dataset.t;i.focus();i.setSelectionRange(i.value.length,i.value.length);grow();toggle()}));
+$('chipMail')&&$('chipMail').addEventListener('click',()=>{
+  if(!TOKEN){openSheet('sheetAuth');return}
+  $('noteMail').textContent='';openSheet('sheetMail');
+});
+$('btnDraft')&&$('btnDraft').addEventListener('click',async()=>{
+  const idea=$('mIdea').value.trim();
+  if(!idea){note('noteMail','Diga sobre o que é o e-mail.');return}
+  note('noteMail','A IA está escrevendo…',1);
+  try{
+    const d=await apiCall('/draft-email',{method:'POST',body:{prompt:idea}});
+    $('mSubject').value=d.subject||'';$('mBody').value=d.body||'';
+    note('noteMail','Pronto — revise e envie.',1);
+  }catch(e){note('noteMail',e.message)}
+});
+$('btnSendMail')&&$('btnSendMail').addEventListener('click',async()=>{
+  const to=$('mTo').value.trim(),subject=$('mSubject').value.trim(),body=$('mBody').value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(to)){note('noteMail','Coloque um e-mail válido de quem vai receber.');return}
+  if(!body){note('noteMail','Escreva a mensagem.');return}
+  note('noteMail','Enviando…',1);
+  try{
+    await apiCall('/send-email',{method:'POST',body:{to,subject,body}});
+    note('noteMail','E-mail enviado! ✅',1);
+    setTimeout(()=>{$('mTo').value='';$('mIdea').value='';$('mSubject').value='';$('mBody').value='';closeSheet()},1200);
+  }catch(e){note('noteMail',e.message)}
+});
 
 let open=null;
 function openSheet(id){closeSheet();open=$(id);open.classList.add('on');$('veil').classList.add('on');$('hint').classList.toggle('open',id==='sheetApps')}
