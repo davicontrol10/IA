@@ -31,6 +31,11 @@ const n8nOn = () => !!(N8N_URL && N8N_KEY);
 if (n8nOn()) console.log('N8N ligado em ' + N8N_URL);
 else console.warn('AVISO: N8N não configurado (N8N_URL / N8N_KEY vazios) — a aba de automações fica em modo demonstração.');
 
+// Hermes Agent (agente externo rodando no seu n8n). O segredo fica SÓ no servidor.
+const HERMES_URL = process.env.HERMES_N8N_WEBHOOK_URL || '';
+const HERMES_SECRET = process.env.HERMES_N8N_WEBHOOK_SECRET || '';
+const hermesOn = () => !!HERMES_URL;
+
 let mailer = null;
 if (SMTP_HOST && SMTP_USER) {
   mailer = nodemailer.createTransport({
@@ -603,7 +608,59 @@ app.post('/api/draft-email', auth, async (req, res) => {
   } catch (e) { res.status(502).json({ error: 'A IA não conseguiu escrever agora.' }); }
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v5-email', n8n: n8nOn(), email: !!mailer }));
+/* ================= HERMES AGENT (agente externo via n8n) ================= */
+app.get('/api/hermes/status', auth, (req, res) => res.json({ connected: hermesOn() }));
+
+app.post('/api/hermes/chat', auth, async (req, res) => {
+  if (!hermesOn()) return res.status(503).json({ error: 'O agente Hermes ainda não foi conectado pelo dono.' });
+  const message = clean(req.body.message);
+  const sessionId = clean(req.body.sessionId) || ('sess-' + req.userId);
+  if (!message) return res.status(400).json({ error: 'Escreva uma mensagem.' });
+  try {
+    const r = await fetch(HERMES_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Hermes-Secret': HERMES_SECRET },
+      body: JSON.stringify({ message, sessionId })
+    });
+    let data = null;
+    try { data = await r.json(); } catch {}
+    if (!r.ok) return res.status(502).json({ error: 'O agente não respondeu (erro ' + r.status + ').' });
+    // aceita vários formatos comuns de resposta do n8n
+    const reply = (data && (data.reply || data.output || data.text || data.message || data.answer)) ||
+      (typeof data === 'string' ? data : '') || 'O agente respondeu, mas sem texto.';
+    res.json({ reply: String(reply), sessionId });
+  } catch (e) { console.error('hermes:', e.message); res.status(502).json({ error: 'Não consegui falar com o agente agora.' }); }
+});
+
+/* ================= AGENTE CRIATIVO (letras, paródia, roteiro) ================= */
+const AGENT_KINDS = {
+  musica: 'Você é um compositor. Escreva uma LETRA de música original e completa em português do Brasil sobre o tema pedido: título, e estrofes com [Verso], [Refrão], [Ponte] marcados. Rima natural. Só a letra, sem explicação.',
+  parodia: 'Você é um comediante. Escreva uma LETRA de paródia ORIGINAL e engraçada em português sobre o tema pedido (não copie letras existentes; crie do zero no clima pedido). Marque [Verso] e [Refrão]. Só a letra.',
+  roteiro: 'Você é um roteirista. Escreva um roteiro curto e envolvente em português sobre o tema pedido, com cenas marcadas (CENA 1, etc.), descrição e diálogos. Só o roteiro.',
+  poema: 'Você é um poeta. Escreva um poema original e bonito em português sobre o tema pedido. Só o poema.'
+};
+app.post('/api/agent/create', auth, async (req, res) => {
+  if (!GEMINI_API_KEY) return res.status(503).json({ error: 'IA sem chave.' });
+  const kind = AGENT_KINDS[req.body.kind] ? req.body.kind : 'musica';
+  const theme = clean(req.body.theme);
+  if (!theme) return res.status(400).json({ error: 'Diga o tema.' });
+  try {
+    const gr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: AGENT_KINDS[kind] }] },
+        contents: [{ role: 'user', parts: [{ text: 'Tema: ' + theme }] }],
+        generationConfig: { temperature: 1.0, maxOutputTokens: 2048 }
+      })
+    });
+    const gd = await gr.json();
+    const text = (gd?.candidates?.[0]?.content?.parts || []).map(p => p.text).filter(Boolean).join('').trim();
+    if (!text) return res.status(502).json({ error: 'A IA não gerou nada. Tente outro tema.' });
+    res.json({ text });
+  } catch (e) { res.status(502).json({ error: 'A IA não respondeu agora.' }); }
+});
+
+app.get('/api/health', (req, res) => res.json({ ok: true, version: 'atlas-v6-agente', n8n: n8nOn(), email: !!mailer, hermes: hermesOn() }));
 
 initDb()
   .then(() => app.listen(PORT, () => console.log('ATLAS no ar na porta ' + PORT)))
